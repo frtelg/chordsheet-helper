@@ -1,0 +1,31 @@
+.ChordSheetEditor {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+  height: 100%;
+}
+
+.SongTextRowContainer {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.ChordSheetEditor form {
+  width: 100%;
+  height: 100%;
+}
+
+.ChordSheetEditor input {
+  width: 80%;
+  margin-bottom: 1px;
+}
+
+.ChordSheetEditor button {
+  margin-top: 10px;
+}
+
+.ChordSheetEditor a {
+  color: blue;
+  text-decoration: underline;
+}

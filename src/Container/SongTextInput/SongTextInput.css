@@ -1,0 +1,20 @@
+.SongTextInput {
+  width: 40%;
+  height: 100%;
+  position: relative;
+}
+
+.SongTextInput form {
+  height: 100%;
+  width: 100%;
+}
+
+.SongTextInput .TextArea {
+  width: 90%;
+  height: 70%;
+  position: relative;
+}
+
+.SongTextInput button {
+  margin-top: 15px;
+}
