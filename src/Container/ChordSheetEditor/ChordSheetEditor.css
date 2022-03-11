@@ -17,8 +17,12 @@
 }
 
 .ChordSheetEditor input {
-  width: 80%;
+  width: 40%;
   margin-bottom: 1px;
+}
+
+.ChordSheetEditor input.ChordInput {
+  color: blue;
 }
 
 .ChordSheetEditor button {
@@ -28,4 +32,13 @@
 .ChordSheetEditor a {
   color: blue;
   text-decoration: underline;
+}
+
+.ResultButtons button {
+  margin-right: 10px;
+}
+
+.ChordInputContainer {
+  display: flex;
+  position: relative;
 }

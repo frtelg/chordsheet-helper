@@ -1,32 +1,39 @@
 import React, { FunctionComponent } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import TextArea from "../../Components/TextArea";
 import { setSongText } from "../../Redux/Reducer/SongTextReducer";
 import "./SongTextInput.css";
 
-export type SongTextInputProps = {
-  onSubmit(i: string): void;
-};
-
-const SongTextInput: FunctionComponent<SongTextInputProps> = ({ onSubmit }) => {
+const SongTextInput: FunctionComponent = () => {
   const inputText = useSelector((state: ReduxState) => state.songText.value);
   const dispatch = useDispatch();
 
-  const changedHandlerHandler = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    dispatch(setSongText(e.target.value));
+  const dispatchSongText = (text: string) => {
+    dispatch(setSongText(text));
   };
 
-  const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    onSubmit(inputText);
+  const changedHandlerHandler = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    dispatchSongText(e.target.value);
+  };
+
+  const handleTab = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      dispatchSongText(e.currentTarget.value + "    ");
+    }
   };
 
   return (
     <div className="SongTextInput">
-      <form onSubmit={submitHandler}>
-        <TextArea inputText={inputText} onChange={changedHandlerHandler} />
-        <button type="submit">Submit</button>
-      </form>
+      <textarea
+        value={inputText}
+        onChange={changedHandlerHandler}
+        onKeyDown={handleTab}
+      />
+      <button
+        onClick={() => navigator.clipboard.readText().then(dispatchSongText)}
+      >
+        Paste from clipboard
+      </button>
     </div>
   );
 };

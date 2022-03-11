@@ -4,26 +4,9 @@ import DownloadTextAsFileLink from "../../Components/DownloadTextAsFileLink";
 import { toggleShowResult } from "../../Redux/Reducer/AppReducer";
 import "./ChordSheetResult.css";
 
-const toChordRow = (indexOfChord: number, chords: string[]) => {
-  return (
-    <React.Fragment>
-      {chords.length > indexOfChord ? chords[indexOfChord] : ""} <br />
-    </React.Fragment>
-  );
-};
-
-const getDownloadLink = (songText: string, chords: string[]) => {
-  const chordSheet = songText
-    .split("\n")
-    .map((r, i) => {
-      const chordRow = chords.length > i ? `${chords[i] || ""}\n` : "";
-      return chordRow + r;
-    })
-    .join("\n");
-
-  const fileName = `${songText.split("\n")[0]}.txt`;
-
-  return <DownloadTextAsFileLink fileName={fileName} text={chordSheet} />;
+type ChordSheetLine = {
+  text: string;
+  lineType: "chord" | "text";
 };
 
 const ChordSheetResult = () => {
@@ -35,19 +18,37 @@ const ChordSheetResult = () => {
     dispatch(toggleShowResult());
   };
 
+  const chordSheetList: ChordSheetLine[] = songText
+    .split("\n")
+    .flatMap((r, i) => {
+      const textLineEntry: ChordSheetLine = { text: r, lineType: "text" };
+      const chordLine = `${chords[i] || ""}`;
+
+      return chordLine.trim() === ""
+        ? [textLineEntry]
+        : [{ text: chordLine, lineType: "chord" }, textLineEntry];
+    });
+
+  const getTextFileName = () =>
+    `${songText.split("\n").filter((l) => l.trim() !== "")[0]}.txt`;
+
   return (
     <div className="ChordSheetResult">
-      <div className="ChordSheetText">
-        {songText.split("\n").map((r, i) => (
+      <div className="ChordSheetText" style={{ whiteSpace: "pre" }}>
+        {chordSheetList.map((r, i) => (
           <React.Fragment key={i}>
-            {r === "" ? null : toChordRow(i, chords)}
-            {r}
+            {r.lineType === "chord" ? <b>{r.text}</b> : r.text}
             <br />
           </React.Fragment>
         ))}
       </div>
-      <button onClick={doToggleEditMode}>Edit</button>
-      {getDownloadLink(songText, chords)}
+      <div className="ResultButtons">
+        <button onClick={doToggleEditMode}>Edit</button>
+        <DownloadTextAsFileLink
+          fileName={getTextFileName()}
+          text={chordSheetList.map((l) => l.text).join("\n")}
+        />
+      </div>
     </div>
   );
 };

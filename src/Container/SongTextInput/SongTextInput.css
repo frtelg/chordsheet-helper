@@ -4,15 +4,9 @@
   position: relative;
 }
 
-.SongTextInput form {
-  height: 100%;
-  width: 100%;
-}
-
-.SongTextInput .TextArea {
+.SongTextInput textarea {
   width: 90%;
-  height: 70%;
-  position: relative;
+  height: 85%;
 }
 
 .SongTextInput button {
