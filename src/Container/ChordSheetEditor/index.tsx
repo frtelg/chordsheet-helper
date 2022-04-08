@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleShowResult } from "../../Redux/Reducer/AppReducer";
-import { setChords } from "../../Redux/Reducer/ChordSheetReducer";
+import { setChords, transposeAll } from "../../Redux/Reducer/ChordSheetReducer";
 import { setSongText } from "../../Redux/Reducer/SongTextReducer";
 import "./ChordSheetEditor.css";
 import ChordSheetRow from "./ChordSheetRow";
@@ -25,12 +25,12 @@ const SongTextInput: FunctionComponent = () => {
   };
 
   useEffect(() => {
-    const songTextArray = toSongTextArray(songText);
-    setSongTextArray(songTextArray);
-    if (songTextArray.length > chords.length) {
+    const songTextAsArray = toSongTextArray(songText);
+    setSongTextArray(songTextAsArray);
+    if (songTextAsArray.length > chords.length) {
       const newChords = [
         ...chords,
-        ...new Array<string>(songTextArray.length - chords.length).map(
+        ...new Array<string>(songTextAsArray.length - chords.length).map(
           () => ""
         ),
       ];
@@ -68,17 +68,33 @@ const SongTextInput: FunctionComponent = () => {
   const noSongTextSupplied =
     songTextArray.filter((t) => t.trim() !== "").length === 0;
 
+  const transposeUp = () => dispatch(transposeAll(1));
+  const transposeDown = () => dispatch(transposeAll(-1));
+
   if (noSongTextSupplied) return null;
 
   return (
     <div className="ChordSheetEditor">
       <div className="EditLyricsToggler">
-        <input
-          type="checkbox"
-          onChange={toggeEditLyrics}
-          value={editLyricsToggled.toString()}
-        />
-        Enable edit lyrics
+        <label>
+          <input
+            type="checkbox"
+            onChange={toggeEditLyrics}
+            value={editLyricsToggled.toString()}
+          />
+          Enable edit lyrics
+        </label>
+        <label>
+          <span>Transpose:</span>
+          <div>
+            <button type="button" onClick={transposeDown}>
+              {"Down"}
+            </button>
+            <button type="button" onClick={transposeUp}>
+              {"Up"}
+            </button>
+          </div>
+        </label>
       </div>
       <div className="ChordSheetFormContainer">
         <form onSubmit={submitHandler}>

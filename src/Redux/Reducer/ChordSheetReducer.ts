@@ -1,3 +1,4 @@
+import { transpose } from "./../../Util/TransposerUtil";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export const chordSheetSlice = createSlice({
@@ -9,9 +10,12 @@ export const chordSheetSlice = createSlice({
     setChords: (state, action: PayloadAction<string[]>) => {
       state.value = action.payload;
     },
+    transposeAll: (state, action: PayloadAction<number>) => {
+      state.value = state.value.map((c) => transpose(c, action.payload));
+    },
   },
 });
 
-export const { setChords } = chordSheetSlice.actions;
+export const { setChords, transposeAll } = chordSheetSlice.actions;
 
 export default chordSheetSlice.reducer;
