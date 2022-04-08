@@ -18,6 +18,11 @@ const SongTextInput: FunctionComponent = () => {
     number[]
   >([]);
   const [songTextArray, setSongTextArray] = useState(toSongTextArray(songText));
+  const [editLyricsToggled, setEditLyricsToggled] = React.useState(false);
+
+  const toggeEditLyrics = () => {
+    setEditLyricsToggled(!editLyricsToggled);
+  };
 
   useEffect(() => {
     const songTextArray = toSongTextArray(songText);
@@ -67,34 +72,45 @@ const SongTextInput: FunctionComponent = () => {
 
   return (
     <div className="ChordSheetEditor">
-      <form onSubmit={submitHandler}>
-        {songTextArray.map((r, i) =>
-          r.trim() === "" &&
-          hideChordsForEmptyLine(i) &&
-          (chords[i] === "" || !chords[i]) ? (
-            <React.Fragment key={i}>
-              <a
-                onClick={() =>
-                  setInstrumentalPartIndexes([...instrumentalPartsIndexes, i])
+      <div className="EditLyricsToggler">
+        <input
+          type="checkbox"
+          onChange={toggeEditLyrics}
+          value={editLyricsToggled.toString()}
+        />
+        Enable edit lyrics
+      </div>
+      <div className="ChordSheetFormContainer">
+        <form onSubmit={submitHandler}>
+          {songTextArray.map((r, i) =>
+            r.trim() === "" &&
+            hideChordsForEmptyLine(i) &&
+            (chords[i] === "" || !chords[i]) ? (
+              <React.Fragment key={i}>
+                <a
+                  onClick={() =>
+                    setInstrumentalPartIndexes([...instrumentalPartsIndexes, i])
+                  }
+                >
+                  Add row for instrumental part
+                </a>
+                <br />
+              </React.Fragment>
+            ) : (
+              <ChordSheetRow
+                key={i}
+                index={i}
+                onChordInputBlur={(e) =>
+                  onChordInputBlurHandler(e.target.value, i)
                 }
-              >
-                Add row for instrumental part
-              </a>
-              <br />
-            </React.Fragment>
-          ) : (
-            <ChordSheetRow
-              key={i}
-              index={i}
-              onChordInputBlur={(e) =>
-                onChordInputBlurHandler(e.target.value, i)
-              }
-              onLyricInputBlur={(e) => onSongTextInputBlurHandler(e, i)}
-            />
-          )
-        )}
-        <button type="submit">Submit changes</button>
-      </form>
+                onLyricInputBlur={(e) => onSongTextInputBlurHandler(e, i)}
+                enableEditLyrics={editLyricsToggled}
+              />
+            )
+          )}
+          <button type="submit">Submit changes</button>
+        </form>
+      </div>
     </div>
   );
 };

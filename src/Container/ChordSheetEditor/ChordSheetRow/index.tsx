@@ -7,18 +7,19 @@ type ChordSheetRowProps = {
   index: number;
   onChordInputBlur(e: React.FocusEvent<HTMLInputElement>): void;
   onLyricInputBlur(e: React.FocusEvent<HTMLInputElement>): void;
+  enableEditLyrics: boolean;
 };
 const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
   index,
   onChordInputBlur,
   onLyricInputBlur,
+  enableEditLyrics,
 }) => {
   const chordSheet = useSelector((state: ReduxState) => state.chordSheet.value);
   const lyrics = useSelector((state: ReduxState) => state.songText.value);
   const { getState } = useStore<ReduxState>();
 
   const getChordValue = () => getState().chordSheet.value[index];
-  const getLyricValue = () => getState().songText.value.split("/n")[index];
 
   const initialLyricValue = lyrics.split("\n")[index];
 
@@ -37,9 +38,12 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
       </div>
       <div className="LyricInputContainer">
         {(initialLyricValue || "").trim() !== "" && (
-          <Input initialValue={initialLyricValue} onBlur={onLyricInputBlur} />
+          <Input
+            initialValue={initialLyricValue}
+            onBlur={onLyricInputBlur}
+            disabled={!enableEditLyrics}
+          />
         )}
-        <a onClick={() => copy(getLyricValue())}>Copy</a>
       </div>
     </div>
   );

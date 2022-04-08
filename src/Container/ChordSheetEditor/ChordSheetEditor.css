@@ -3,16 +3,18 @@
   flex-direction: column;
   width: 60%;
   height: 100%;
+  position: relative;
 }
 
 .SongTextRowContainer {
   display: flex;
   flex-direction: column;
   margin-bottom: 10px;
-  width: 100%;
+  min-height: 10px;
+  width: 90%;
 }
 
-.ChordSheetEditor form {
+.ChordSheetFormContainer form {
   width: 100%;
   height: 100%;
 }
@@ -57,4 +59,16 @@
 .LyricInputContainer a {
   cursor: pointer;
   margin-left: 10px;
+}
+
+.EditLyricsToggler {
+  width: 100%;
+  height: 3%;
+  min-width: 10px;
+  display: flex;
+  position: relative;
+}
+
+.EditLyricsToggler input {
+  width: 20px;
 }
