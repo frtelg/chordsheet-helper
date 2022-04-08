@@ -12,6 +12,7 @@ const SongTextInput: FunctionComponent = () => {
   };
 
   const changedHandlerHandler = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    e.preventDefault();
     dispatchSongText(e.target.value);
   };
 

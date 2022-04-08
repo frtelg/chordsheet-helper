@@ -9,6 +9,7 @@
   display: flex;
   flex-direction: column;
   margin-bottom: 10px;
+  width: 100%;
 }
 
 .ChordSheetEditor form {
@@ -17,7 +18,7 @@
 }
 
 .ChordSheetEditor input {
-  width: 40%;
+  width: 80%;
   margin-bottom: 1px;
 }
 
@@ -41,4 +42,19 @@
 .ChordInputContainer {
   display: flex;
   position: relative;
+}
+
+.ChordInputContainer a {
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.LyricInputContainer {
+  display: flex;
+  position: relative;
+}
+
+.LyricInputContainer a {
+  cursor: pointer;
+  margin-left: 10px;
 }

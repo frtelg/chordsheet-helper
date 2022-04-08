@@ -3,10 +3,16 @@ import AppReducer from "../Reducer/AppReducer";
 import ChordSheetReducer from "../Reducer/ChordSheetReducer";
 import SongTextReducer from "../Reducer/SongTextReducer";
 
-export default configureStore({
+const store = configureStore({
   reducer: {
     app: AppReducer,
     songText: SongTextReducer,
     chordSheet: ChordSheetReducer,
   },
 });
+
+declare global {
+  export type RootState = ReturnType<typeof store.getState>;
+}
+
+export default store;
