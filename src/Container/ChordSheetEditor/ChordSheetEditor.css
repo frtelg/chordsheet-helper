@@ -92,3 +92,9 @@
 .EditLyricsToggler {
   margin: 0;
 }
+
+.Transposer {
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}

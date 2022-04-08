@@ -1,10 +1,11 @@
 import React, { FunctionComponent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleShowResult } from "../../Redux/Reducer/AppReducer";
-import { setChords, transposeAll } from "../../Redux/Reducer/ChordSheetReducer";
+import { setChords } from "../../Redux/Reducer/ChordSheetReducer";
 import { setSongText } from "../../Redux/Reducer/SongTextReducer";
 import "./ChordSheetEditor.css";
 import ChordSheetRow from "./ChordSheetRow";
+import Transposer from "./Transposer";
 
 const toSongTextArray = (text: string) => text.split("\n");
 
@@ -68,9 +69,6 @@ const SongTextInput: FunctionComponent = () => {
   const noSongTextSupplied =
     songTextArray.filter((t) => t.trim() !== "").length === 0;
 
-  const transposeUp = () => dispatch(transposeAll(1));
-  const transposeDown = () => dispatch(transposeAll(-1));
-
   if (noSongTextSupplied) return null;
 
   return (
@@ -84,17 +82,7 @@ const SongTextInput: FunctionComponent = () => {
           />
           Enable edit lyrics
         </label>
-        <label>
-          <span>Transpose:</span>
-          <div>
-            <button type="button" onClick={transposeDown}>
-              {"Down"}
-            </button>
-            <button type="button" onClick={transposeUp}>
-              {"Up"}
-            </button>
-          </div>
-        </label>
+        <Transposer />
       </div>
       <div className="ChordSheetFormContainer">
         <form onSubmit={submitHandler}>
