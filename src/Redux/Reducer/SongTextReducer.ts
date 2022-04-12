@@ -9,9 +9,12 @@ export const songTextSlice = createSlice({
     setSongText: (state, action: PayloadAction<string>) => {
       state.value = action.payload;
     },
+    resetSongText: (state) => {
+      state.value = "";
+    },
   },
 });
 
-export const { setSongText } = songTextSlice.actions;
+export const { setSongText, resetSongText } = songTextSlice.actions;
 
 export default songTextSlice.reducer;

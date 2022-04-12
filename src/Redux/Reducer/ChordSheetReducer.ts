@@ -13,9 +13,12 @@ export const chordSheetSlice = createSlice({
     transposeAll: (state, action: PayloadAction<number>) => {
       state.value = state.value.map((c) => transpose(c, action.payload));
     },
+    resetChords: (state) => {
+      state.value = [] as string[];
+    },
   },
 });
 
-export const { setChords, transposeAll } = chordSheetSlice.actions;
+export const { setChords, transposeAll, resetChords } = chordSheetSlice.actions;
 
 export default chordSheetSlice.reducer;

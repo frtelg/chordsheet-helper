@@ -1,6 +1,10 @@
 import React, { FunctionComponent } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setSongText } from "../../Redux/Reducer/SongTextReducer";
+import { resetChords } from "../../Redux/Reducer/ChordSheetReducer";
+import {
+  resetSongText,
+  setSongText,
+} from "../../Redux/Reducer/SongTextReducer";
 import "./SongTextInput.css";
 
 const SongTextInput: FunctionComponent = () => {
@@ -23,6 +27,11 @@ const SongTextInput: FunctionComponent = () => {
     }
   };
 
+  const handleReset = () => {
+    dispatch(resetSongText());
+    dispatch(resetChords());
+  };
+
   return (
     <div className="SongTextInput">
       <textarea
@@ -31,9 +40,13 @@ const SongTextInput: FunctionComponent = () => {
         onKeyDown={handleTab}
       />
       <button
+        type="button"
         onClick={() => navigator.clipboard.readText().then(dispatchSongText)}
       >
         Paste from clipboard
+      </button>
+      <button type="button" onClick={handleReset}>
+        Reset
       </button>
     </div>
   );
