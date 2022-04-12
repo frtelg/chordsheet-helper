@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import { Provider } from "react-redux";
@@ -7,13 +7,16 @@ import Store from "./Redux/Store";
 
 import reportWebVitals from "./reportWebVitals";
 
-ReactDOM.render(
+const container = document.getElementById("root") as HTMLElement;
+
+const root = ReactDOM.createRoot(container);
+
+root.render(
   <React.StrictMode>
     <Provider store={Store}>
       <App />
     </Provider>
-  </React.StrictMode>,
-  document.getElementById("root")
+  </React.StrictMode>
 );
 
 declare global {
