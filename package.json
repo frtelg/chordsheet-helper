@@ -55,6 +55,11 @@
         "ts-jest": "^27.1.4"
     },
     "lint-staged": {
-        "**/*": "prettier --write --ignore-unknown"
+        "**/src/**/*.{js,ts,tsx}": [
+            "eslint --fix"
+        ],
+        "*.json": [
+            "prettier --write"
+        ]
     }
 }
