@@ -97,10 +97,19 @@ export const chordSheetSlice = createSlice({
                 return;
             }
 
+            if (action.payload < state.selected.from) {
+                state.selected = {
+                    ...state.selected,
+                    from: action.payload,
+                };
+
+                return;
+            }
+
             if (action.payload < state.selected.to) {
                 state.selected = {
                     ...state.selected,
-                    to: action.payload > state.selected.from ? action.payload - 1 : undefined,
+                    to: action.payload - 1,
                 };
 
                 return;
