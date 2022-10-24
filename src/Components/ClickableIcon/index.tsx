@@ -4,12 +4,17 @@ import { IconProps } from '@mdi/react/dist/IconProps';
 
 interface ClickableIconProps extends IconProps {
     onClick(): void;
+    disabled?: boolean;
 }
 
-const ClickableIcon: FunctionComponent<ClickableIconProps> = ({ onClick, ...props }) => {
+const ClickableIcon: FunctionComponent<ClickableIconProps> = ({ onClick, disabled, ...props }) => {
     return (
-        <span onClick={onClick} style={{ cursor: 'pointer' }}>
-            <Icon size="1rem" {...props} />
+        <span
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
+            onClick={disabled ? () => {} : onClick}
+            style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
+        >
+            <Icon size="1rem" color={disabled ? 'grey' : 'black'} {...props} />
         </span>
     );
 };

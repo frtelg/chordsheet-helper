@@ -1,123 +1,120 @@
-import React, { FunctionComponent, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import ClickableIcon from "../../Components/ClickableIcon";
-import { toggleShowResult } from "../../Redux/Reducer/AppReducer";
-import { setChords, undo } from "../../Redux/Reducer/ChordSheetReducer";
-import { setSongText } from "../../Redux/Reducer/SongTextReducer";
-import "./ChordSheetEditor.css";
-import ChordSheetRow from "./ChordSheetRow";
-import Transposer from "./Transposer";
-import { mdiUndoVariant } from '@mdi/js';
+import React, { FunctionComponent, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import ClickableIcon from '../../Components/ClickableIcon';
+import { toggleShowResult } from '../../Redux/Reducer/AppReducer';
+import { clearSelected, setChords, undo } from '../../Redux/Reducer/ChordSheetReducer';
+import { setSongText } from '../../Redux/Reducer/SongTextReducer';
+import './ChordSheetEditor.css';
+import ChordSheetRow from './ChordSheetRow';
+import Transposer from './Transposer';
+import { mdiUndoVariant, mdiBorderNone } from '@mdi/js';
 
-const toSongTextArray = (text: string) => text.split("\n");
+const toSongTextArray = (text: string) => text.split('\n');
 
 const SongTextInput: FunctionComponent = () => {
-  const songText = useSelector(
-    (state: ReduxState) => state.songText.value || ""
-  );
-  const chords = useSelector((state: ReduxState) => state.chordSheet.value);
-  const dispatch = useDispatch();
-  const [instrumentalPartsIndexes, setInstrumentalPartIndexes] = useState<
-    number[]
-  >([]);
-  const [songTextArray, setSongTextArray] = useState(toSongTextArray(songText));
-  const [editLyricsToggled, setEditLyricsToggled] = React.useState(false);
+    const songText = useSelector((state: ReduxState) => state.songText.value || '');
+    const chords = useSelector((state: ReduxState) => state.chordSheet.value);
+    const dispatch = useDispatch();
+    const [instrumentalPartsIndexes, setInstrumentalPartIndexes] = useState<number[]>([]);
+    const [songTextArray, setSongTextArray] = useState(toSongTextArray(songText));
+    const [editLyricsToggled, setEditLyricsToggled] = React.useState(false);
 
-  const toggeEditLyrics = () => {
-    setEditLyricsToggled(!editLyricsToggled);
-  };
+    const toggeEditLyrics = () => {
+        setEditLyricsToggled(!editLyricsToggled);
+    };
 
-  useEffect(() => {
-    const songTextAsArray = toSongTextArray(songText);
-    setSongTextArray(songTextAsArray);
-    if (songTextAsArray.length > chords.length) {
-      const newChords = [
-        ...chords,
-        ...new Array<string>(songTextAsArray.length - chords.length).map(
-          () => ""
-        ),
-      ];
-      dispatch(setChords(newChords));
-    }
-  }, [songText]);
+    useEffect(() => {
+        const songTextAsArray = toSongTextArray(songText);
+        setSongTextArray(songTextAsArray);
+        if (songTextAsArray.length > chords.length) {
+            const newChords = [
+                ...chords,
+                ...new Array<string>(songTextAsArray.length - chords.length).map(() => ''),
+            ];
+            dispatch(setChords(newChords));
+        }
+    }, [songText]);
 
-  const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    dispatch(toggleShowResult());
-  };
+    const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        dispatch(toggleShowResult());
+    };
 
-  const onSongTextInputBlurHandler = (
-    e: React.FocusEvent<HTMLInputElement>,
-    index: number
-  ) => {
-    const value = e.target.value;
-    const oldSongTextArray = [...toSongTextArray(songText)];
-    const newSongTextArray = oldSongTextArray.map((r, i) =>
-      i === index ? value : r
+    const onSongTextInputBlurHandler = (e: React.FocusEvent<HTMLInputElement>, index: number) => {
+        const value = e.target.value;
+        const oldSongTextArray = [...toSongTextArray(songText)];
+        const newSongTextArray = oldSongTextArray.map((r, i) => (i === index ? value : r));
+        const newSongText = newSongTextArray.join('\n');
+
+        dispatch(setSongText(newSongText));
+    };
+
+    const onChordInputBlurHandler = (newValue: string, lineIndex: number) => {
+        const newChords = chords.map((v, i) => (i === lineIndex ? newValue : v));
+        dispatch(setChords(newChords));
+    };
+
+    const hideChordsForEmptyLine = (lineIndex: number) =>
+        instrumentalPartsIndexes.indexOf(lineIndex) === -1;
+
+    const noSongTextSupplied = songTextArray.filter((t) => t.trim() !== '').length === 0;
+
+    if (noSongTextSupplied) return null;
+
+    return (
+        <div className="ChordSheetEditor">
+            <div className="EditLyricsToggler">
+                <label>
+                    <input
+                        type="checkbox"
+                        onChange={toggeEditLyrics}
+                        value={editLyricsToggled.toString()}
+                    />
+                    Enable edit lyrics
+                </label>
+                <Transposer />
+                <ClickableIcon
+                    path={mdiUndoVariant}
+                    onClick={() => dispatch(undo())}
+                    title="Undo last action"
+                />
+                <ClickableIcon
+                    path={mdiBorderNone}
+                    onClick={() => dispatch(clearSelected())}
+                    title="Clear selected chord rows"
+                />
+            </div>
+            <div className="ChordSheetFormContainer">
+                <form onSubmit={submitHandler}>
+                    {songTextArray.map((r, i) =>
+                        r.trim() === '' &&
+                        hideChordsForEmptyLine(i) &&
+                        (chords[i] === '' || !chords[i]) ? (
+                            <React.Fragment key={i}>
+                                <a
+                                    onClick={() =>
+                                        setInstrumentalPartIndexes([...instrumentalPartsIndexes, i])
+                                    }
+                                >
+                                    Add row for instrumental part
+                                </a>
+                                <br />
+                            </React.Fragment>
+                        ) : (
+                            <ChordSheetRow
+                                key={i}
+                                index={i}
+                                onChordInputBlur={(e) => onChordInputBlurHandler(e.target.value, i)}
+                                onLyricInputBlur={(e) => onSongTextInputBlurHandler(e, i)}
+                                enableEditLyrics={editLyricsToggled}
+                            />
+                        )
+                    )}
+                    <button type="submit">Submit changes</button>
+                </form>
+            </div>
+        </div>
     );
-    const newSongText = newSongTextArray.join("\n");
-
-    dispatch(setSongText(newSongText));
-  };
-
-  const onChordInputBlurHandler = (newValue: string, lineIndex: number) => {
-    const newChords = chords.map((v, i) => (i === lineIndex ? newValue : v));
-    dispatch(setChords(newChords));
-  };
-
-  const hideChordsForEmptyLine = (lineIndex: number) =>
-    instrumentalPartsIndexes.indexOf(lineIndex) === -1;
-
-  const noSongTextSupplied =
-    songTextArray.filter((t) => t.trim() !== "").length === 0;
-
-  if (noSongTextSupplied) return null;
-
-  return (
-      <div className="ChordSheetEditor">
-          <div className="EditLyricsToggler">
-              <label>
-                  <input
-                      type="checkbox"
-                      onChange={toggeEditLyrics}
-                      value={editLyricsToggled.toString()}
-                  />
-                  Enable edit lyrics
-              </label>
-              <Transposer />
-              <ClickableIcon path={mdiUndoVariant} onClick={() => dispatch(undo())} title="Undo last action" />
-          </div>
-          <div className="ChordSheetFormContainer">
-              <form onSubmit={submitHandler}>
-                  {songTextArray.map((r, i) =>
-                      r.trim() === '' &&
-                      hideChordsForEmptyLine(i) &&
-                      (chords[i] === '' || !chords[i]) ? (
-                          <React.Fragment key={i}>
-                              <a
-                                  onClick={() =>
-                                      setInstrumentalPartIndexes([...instrumentalPartsIndexes, i])
-                                  }
-                              >
-                                  Add row for instrumental part
-                              </a>
-                              <br />
-                          </React.Fragment>
-                      ) : (
-                          <ChordSheetRow
-                              key={i}
-                              index={i}
-                              onChordInputBlur={(e) => onChordInputBlurHandler(e.target.value, i)}
-                              onLyricInputBlur={(e) => onSongTextInputBlurHandler(e, i)}
-                              enableEditLyrics={editLyricsToggled}
-                          />
-                      )
-                  )}
-                  <button type="submit">Submit changes</button>
-              </form>
-          </div>
-      </div>
-  );
 };
 
 export default SongTextInput;
