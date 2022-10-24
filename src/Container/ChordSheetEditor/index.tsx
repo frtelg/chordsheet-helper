@@ -1,11 +1,13 @@
 import React, { FunctionComponent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import ClickableIcon from "../../Components/ClickableIcon";
 import { toggleShowResult } from "../../Redux/Reducer/AppReducer";
-import { setChords } from "../../Redux/Reducer/ChordSheetReducer";
+import { setChords, undo } from "../../Redux/Reducer/ChordSheetReducer";
 import { setSongText } from "../../Redux/Reducer/SongTextReducer";
 import "./ChordSheetEditor.css";
 import ChordSheetRow from "./ChordSheetRow";
 import Transposer from "./Transposer";
+import { mdiUndoVariant } from '@mdi/js';
 
 const toSongTextArray = (text: string) => text.split("\n");
 
@@ -72,50 +74,49 @@ const SongTextInput: FunctionComponent = () => {
   if (noSongTextSupplied) return null;
 
   return (
-    <div className="ChordSheetEditor">
-      <div className="EditLyricsToggler">
-        <label>
-          <input
-            type="checkbox"
-            onChange={toggeEditLyrics}
-            value={editLyricsToggled.toString()}
-          />
-          Enable edit lyrics
-        </label>
-        <Transposer />
+      <div className="ChordSheetEditor">
+          <div className="EditLyricsToggler">
+              <label>
+                  <input
+                      type="checkbox"
+                      onChange={toggeEditLyrics}
+                      value={editLyricsToggled.toString()}
+                  />
+                  Enable edit lyrics
+              </label>
+              <Transposer />
+              <ClickableIcon path={mdiUndoVariant} onClick={() => dispatch(undo())} title="Undo last action" />
+          </div>
+          <div className="ChordSheetFormContainer">
+              <form onSubmit={submitHandler}>
+                  {songTextArray.map((r, i) =>
+                      r.trim() === '' &&
+                      hideChordsForEmptyLine(i) &&
+                      (chords[i] === '' || !chords[i]) ? (
+                          <React.Fragment key={i}>
+                              <a
+                                  onClick={() =>
+                                      setInstrumentalPartIndexes([...instrumentalPartsIndexes, i])
+                                  }
+                              >
+                                  Add row for instrumental part
+                              </a>
+                              <br />
+                          </React.Fragment>
+                      ) : (
+                          <ChordSheetRow
+                              key={i}
+                              index={i}
+                              onChordInputBlur={(e) => onChordInputBlurHandler(e.target.value, i)}
+                              onLyricInputBlur={(e) => onSongTextInputBlurHandler(e, i)}
+                              enableEditLyrics={editLyricsToggled}
+                          />
+                      )
+                  )}
+                  <button type="submit">Submit changes</button>
+              </form>
+          </div>
       </div>
-      <div className="ChordSheetFormContainer">
-        <form onSubmit={submitHandler}>
-          {songTextArray.map((r, i) =>
-            r.trim() === "" &&
-            hideChordsForEmptyLine(i) &&
-            (chords[i] === "" || !chords[i]) ? (
-              <React.Fragment key={i}>
-                <a
-                  onClick={() =>
-                    setInstrumentalPartIndexes([...instrumentalPartsIndexes, i])
-                  }
-                >
-                  Add row for instrumental part
-                </a>
-                <br />
-              </React.Fragment>
-            ) : (
-              <ChordSheetRow
-                key={i}
-                index={i}
-                onChordInputBlur={(e) =>
-                  onChordInputBlurHandler(e.target.value, i)
-                }
-                onLyricInputBlur={(e) => onSongTextInputBlurHandler(e, i)}
-                enableEditLyrics={editLyricsToggled}
-              />
-            )
-          )}
-          <button type="submit">Submit changes</button>
-        </form>
-      </div>
-    </div>
   );
 };
 
