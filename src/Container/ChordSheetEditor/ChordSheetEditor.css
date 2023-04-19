@@ -14,6 +14,10 @@
   width: 90%;
 }
 
+.ChordSheetFormContainer {
+  margin-top: 5%;
+}
+
 .ChordSheetFormContainer form {
   width: 100%;
   height: 100%;
@@ -66,9 +70,13 @@
   height: 5%;
   min-width: 200px;
   display: flex;
-  position: relative;
+  position: fixed;
   align-items: center;
   justify-content: flex-start;
+  margin: 0;
+  z-index: 10;
+  background-color: white;
+  opacity: 80%;
 }
 
 .EditLyricsToggler input {
@@ -87,10 +95,6 @@
 .EditLyricsToggler button {
   height: 25px;
   margin: 0 5px;
-}
-
-.EditLyricsToggler {
-  margin: 0;
 }
 
 .Transposer {
