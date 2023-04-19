@@ -52,29 +52,33 @@ export const chordSheetSlice = createSlice({
             }
         },
         setSelected: (state, action: PayloadAction<number>) => {
-            if (typeof state.selected.from === 'undefined') {
+            const { selected } = state;
+            const { from, to } = selected;
+            const { payload } = action;
+
+            if (typeof from === 'undefined') {
                 state.selected = {
-                    ...state.selected,
-                    from: action.payload,
+                    ...selected,
+                    from: payload,
                 };
 
                 return;
             }
 
-            if (!state.selected.to) {
-                if (state.selected.from > action.payload) {
+            if (!to) {
+                if (from > payload) {
                     state.selected = {
-                        from: action.payload,
-                        to: state.selected.from,
+                        from: payload,
+                        to: from,
                     };
 
                     return;
                 }
 
-                if (state.selected.from < action.payload) {
+                if (from < payload) {
                     state.selected = {
-                        ...state.selected,
-                        to: action.payload,
+                        ...selected,
+                        to: payload,
                     };
 
                     return;
@@ -88,45 +92,45 @@ export const chordSheetSlice = createSlice({
                 return;
             }
 
-            if (action.payload === state.selected.from) {
+            if (payload === from) {
                 state.selected = {
-                    from: action.payload + 1,
-                    to: state.selected.to > action.payload + 1 ? state.selected.to : undefined,
+                    from: payload + 1,
+                    to: to > payload + 1 ? to : undefined,
                 };
 
                 return;
             }
 
-            if (action.payload < state.selected.from) {
+            if (payload < from) {
                 state.selected = {
-                    ...state.selected,
-                    from: action.payload,
+                    ...selected,
+                    from: payload,
                 };
 
                 return;
             }
 
-            if (action.payload < state.selected.to) {
+            if (payload < to) {
                 state.selected = {
-                    ...state.selected,
-                    to: action.payload - 1,
+                    ...selected,
+                    to: payload - 1,
                 };
 
                 return;
             }
 
-            if (action.payload > state.selected.to) {
+            if (payload > to) {
                 state.selected = {
-                    ...state.selected,
-                    to: action.payload,
+                    ...selected,
+                    to: payload,
                 };
 
                 return;
             }
 
             state.selected = {
-                ...state.selected,
-                to: action.payload > state.selected.from ? action.payload - 1 : undefined,
+                ...selected,
+                to: payload > from ? action.payload - 1 : undefined,
             };
         },
         clearSelected: (state) => {
