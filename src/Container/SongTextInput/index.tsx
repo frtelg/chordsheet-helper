@@ -37,6 +37,7 @@ const SongTextInput: FunctionComponent = () => {
         value={inputText}
         onChange={changedHandlerHandler}
         onKeyDown={handleTab}
+        placeholder="Enter or paste song lyrics here"
       />
       <button
         type="button"
