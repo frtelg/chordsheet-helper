@@ -44,6 +44,10 @@ class RangeSelected implements MutableSelectedChordRows {
     constructor(public from: number, public to: number) { }
 
     applyNewSelectedNumber(selectedRowNumber: number): SelectedChordRows {
+        if (this.from === this.to && selectedRowNumber === this.from) {
+            return {};
+        }
+
         if (selectedRowNumber === this.from) {
             return {
                 from: selectedRowNumber + 1,
@@ -82,8 +86,8 @@ class RangeSelected implements MutableSelectedChordRows {
 function getCurrentSelectedRows(currentSelected: SelectedChordRows): MutableSelectedChordRows {
     const { from, to } = currentSelected;
 
-    if (!from) return new NothingSelected();
-    if (!to) return new OneRowSelected(from);
+    if (typeof from === 'undefined') return new NothingSelected(); // typeof from === 'undefined', otherwise 0 will be treated as undefined
+    if (!to || from === to) return new OneRowSelected(from);
     return new RangeSelected(from, to);
 }
 
