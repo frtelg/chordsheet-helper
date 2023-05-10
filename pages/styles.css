@@ -27,6 +27,15 @@ input {
   font-size: inherit;
 }
 
+.NotFound {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 25px;
+}
+
 .App {
   width: 100%;
   height: 100%;

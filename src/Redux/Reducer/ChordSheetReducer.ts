@@ -1,17 +1,13 @@
+import { determineSelectedRows, SelectedChordRows } from '../../Util/SelectedChordRows';
 import { transpose } from './../../Util/TransposerUtil';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-type SelectedChords = {
-    from?: number;
-    to?: number;
-};
 
 export const chordSheetSlice = createSlice({
     name: 'chordSheet',
     initialState: {
         value: [] as string[],
         history: [] as string[][],
-        selected: {} as SelectedChords,
+        selected: {} as SelectedChordRows,
     },
     reducers: {
         setChords: (state, action: PayloadAction<string[]>) => {
@@ -53,85 +49,9 @@ export const chordSheetSlice = createSlice({
         },
         setSelected: (state, action: PayloadAction<number>) => {
             const { selected } = state;
-            const { from, to } = selected;
             const { payload } = action;
 
-            if (typeof from === 'undefined') {
-                state.selected = {
-                    ...selected,
-                    from: payload,
-                };
-
-                return;
-            }
-
-            if (!to) {
-                if (from > payload) {
-                    state.selected = {
-                        from: payload,
-                        to: from,
-                    };
-
-                    return;
-                }
-
-                if (from < payload) {
-                    state.selected = {
-                        ...selected,
-                        to: payload,
-                    };
-
-                    return;
-                }
-
-                state.selected = {
-                    from: undefined,
-                    to: undefined,
-                };
-
-                return;
-            }
-
-            if (payload === from) {
-                state.selected = {
-                    from: payload + 1,
-                    to: to > payload + 1 ? to : undefined,
-                };
-
-                return;
-            }
-
-            if (payload < from) {
-                state.selected = {
-                    ...selected,
-                    from: payload,
-                };
-
-                return;
-            }
-
-            if (payload < to) {
-                state.selected = {
-                    ...selected,
-                    to: payload - 1,
-                };
-
-                return;
-            }
-
-            if (payload > to) {
-                state.selected = {
-                    ...selected,
-                    to: payload,
-                };
-
-                return;
-            }
-
-            state.selected = {
-                ...selected,
-                to: payload > from ? action.payload - 1 : undefined,
-            };
+            state.selected = determineSelectedRows(selected, payload);
         },
         clearSelected: (state) => {
             state.selected = {};
