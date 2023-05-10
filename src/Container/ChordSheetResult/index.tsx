@@ -2,7 +2,6 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import DownloadTextAsFileLink from "../../Components/DownloadTextAsFileLink";
 import { toggleShowResult } from "../../Redux/Reducer/AppReducer";
-import "./ChordSheetResult.css";
 
 type ChordSheetLine = {
   text: string;
@@ -20,7 +19,7 @@ const ChordSheetResult = () => {
 
   const chordSheetList: ChordSheetLine[] = songText
     .split("\n")
-    .flatMap((r, i) => {
+    .flatMap((r: string, i: number) => {
       const textLineEntry: ChordSheetLine = { text: r, lineType: "text" };
       const chordLine = `${chords[i] || ""}`;
 
@@ -30,7 +29,7 @@ const ChordSheetResult = () => {
     });
 
   const getTextFileName = () =>
-    `${songText.split("\n").filter((l) => l.trim() !== "")[0]}.txt`;
+    `${songText.split("\n").filter((l: string) => l.trim() !== "")[0]}.txt`;
 
   return (
     <div className="ChordSheetResult">

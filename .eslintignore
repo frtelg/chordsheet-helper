@@ -3,3 +3,4 @@ jest.config.js
 .eslintrc.js
 *.spec.ts
 *.spec.tsx
+*.js

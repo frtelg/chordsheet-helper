@@ -4,7 +4,6 @@ import ClickableIcon from '../../Components/ClickableIcon';
 import { toggleShowResult } from '../../Redux/Reducer/AppReducer';
 import { clearSelected, setChords, undo } from '../../Redux/Reducer/ChordSheetReducer';
 import { setSongText } from '../../Redux/Reducer/SongTextReducer';
-import './ChordSheetEditor.css';
 import ChordSheetRow from './ChordSheetRow';
 import Transposer from './Transposer';
 import { mdiUndoVariant, mdiBorderNone } from '@mdi/js';

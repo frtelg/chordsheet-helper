@@ -1,6 +1,5 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import "./App.css";
 import ChordSheetEditor from "./Container/ChordSheetEditor";
 import ChordSheetResult from "./Container/ChordSheetResult";
 import SongTextInput from "./Container/SongTextInput";

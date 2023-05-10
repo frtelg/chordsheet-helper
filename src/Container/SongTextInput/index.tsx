@@ -5,7 +5,6 @@ import {
   resetSongText,
   setSongText,
 } from "../../Redux/Reducer/SongTextReducer";
-import "./SongTextInput.css";
 
 const SongTextInput: FunctionComponent = () => {
   const inputText = useSelector((state: ReduxState) => state.songText.value);
