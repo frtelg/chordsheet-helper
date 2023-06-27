@@ -1,5 +1,5 @@
-import { determineSelectedRows, SelectedChordRows } from '../../Util/SelectedChordRows';
-import { transpose } from './../../Util/TransposerUtil';
+import { determineSelectedRows, SelectedChordRows } from '@/lib/selectedrows/SelectedChordRows';
+import { transpose } from '@/lib/transposer/TransposerUtil';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export const chordSheetSlice = createSlice({

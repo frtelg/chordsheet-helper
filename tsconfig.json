@@ -17,8 +17,16 @@
         "jsx": "preserve",
         "noEmit": true,
         "incremental": true,
-        "isolatedModules": true
+        "isolatedModules": true,
+        "plugins": [
+            {
+                "name": "next"
+            }
+        ],
+        "paths": {
+            "@/*": ["./src/*"]
+        }
     },
-    "include": ["src", "pages"],
+    "include": ["src", "pages", ".next/types/**/*.ts"],
     "exclude": ["./src/**/*.spec.ts", "./src/**/*.spec.tsx", "./src/**/*.tsx.snap", "./build"]
 }
