@@ -1,12 +1,11 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import ClickableIcon from '@/components/ClickableIcon';
 import { toggleShowResult } from '@/redux/reducer/AppReducer';
-import { clearSelected, setChords, undo } from '@/redux/reducer/ChordSheetReducer';
+import { setChords } from '@/redux/reducer/ChordSheetReducer';
 import { setSongText } from '@/redux/reducer/SongTextReducer';
 import ChordSheetRow from '@/container/ChordSheetEditor/ChordSheetRow';
 import Transposer from '@/container/ChordSheetEditor/Transposer';
-import { mdiUndoVariant, mdiBorderNone } from '@mdi/js';
+import HelpersBar from './HelpersBar';
 
 const toSongTextArray = (text: string) => text.split('\n');
 
@@ -62,26 +61,12 @@ const SongTextInput: FunctionComponent = () => {
 
     return (
         <div className="ChordSheetEditor">
-            <div className="EditLyricsToggler">
-                <label>
-                    <input
-                        type="checkbox"
-                        onChange={toggeEditLyrics}
-                        value={editLyricsToggled.toString()}
-                    />
-                    Enable edit lyrics
-                </label>
+            <div className="FixedHeader">
+                <HelpersBar
+                    editLyricsToggled={editLyricsToggled}
+                    toggeEditLyrics={toggeEditLyrics}
+                />
                 <Transposer />
-                <ClickableIcon
-                    path={mdiUndoVariant}
-                    onClick={() => dispatch(undo())}
-                    title="Undo last action"
-                />
-                <ClickableIcon
-                    path={mdiBorderNone}
-                    onClick={() => dispatch(clearSelected())}
-                    title="Clear selected chord rows"
-                />
             </div>
             <div className="ChordSheetFormContainer">
                 <form onSubmit={submitHandler}>
