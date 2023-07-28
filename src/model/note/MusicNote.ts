@@ -1,4 +1,4 @@
-import { FLAT, FLAT_SYMBOL, SHARP, SHARP_SYMBOL } from '../../constants/musicconstants';
+import { FLAT, FLAT_SYMBOL, SHARP, SHARP_SYMBOL } from '../../constants/MusicConstants';
 import NoteName, { getNoteByKey } from '../enums/NoteName';
 
 const mod = (target: number, m: number) => ((target % m) + m) % m;
