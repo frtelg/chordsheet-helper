@@ -1,8 +1,8 @@
-import { parseChords } from '../../lib/chord/parseChord';
-import findKey from '../../lib/key/findKey';
-import { determineSelectedRows, SelectedChordRows } from '../../lib/selectedrows/SelectedChordRows';
-import { transpose } from '../../lib/transposer/TransposerUtil';
-import NoteName from '../../model/enums/NoteName';
+import { parseChords } from '@/lib/chord/parseChord';
+import findKey from '@/lib/key/findKey';
+import { determineSelectedRows, SelectedChordRows } from '@/lib/selectedrows/SelectedChordRows';
+import { transpose } from '@/lib/transposer/TransposerUtil';
+import NoteName from '@/model/enums/NoteName';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface ChordSheetState {

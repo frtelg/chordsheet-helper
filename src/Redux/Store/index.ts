@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
-import AppReducer from '../reducer/AppReducer';
-import ChordSheetReducer from '../reducer/ChordSheetReducer';
-import SongTextReducer from '../reducer/SongTextReducer';
+import AppReducer from '@/redux/reducer/AppReducer';
+import ChordSheetReducer from '@/redux/reducer/ChordSheetReducer';
+import SongTextReducer from '@/redux/reducer/SongTextReducer';
 
 const store = configureStore({
     reducer: {
