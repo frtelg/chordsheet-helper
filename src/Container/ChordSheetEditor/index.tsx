@@ -1,11 +1,11 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import ClickableIcon from '@/components/ClickableIcon';
-import { toggleShowResult } from '@/redux/reducer/AppReducer';
-import { clearSelected, setChords, undo } from '@/redux/reducer/ChordSheetReducer';
-import { setSongText } from '@/redux/reducer/SongTextReducer';
-import ChordSheetRow from '@/container/ChordSheetEditor/ChordSheetRow';
-import Transposer from '@/container/ChordSheetEditor/Transposer';
+import ClickableIcon from '../../Components/ClickableIcon';
+import { toggleShowResult } from '../../Redux/Reducer/AppReducer';
+import { clearSelected, setChords, undo } from '../../Redux/Reducer/ChordSheetReducer';
+import { setSongText } from '../../Redux/Reducer/SongTextReducer';
+import ChordSheetRow from './ChordSheetRow';
+import Transposer from './Transposer';
 import { mdiUndoVariant, mdiBorderNone } from '@mdi/js';
 
 const toSongTextArray = (text: string) => text.split('\n');

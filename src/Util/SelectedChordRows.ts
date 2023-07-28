@@ -41,7 +41,7 @@ class OneRowSelected implements MutableSelectedChordRows {
 }
 
 class RangeSelected implements MutableSelectedChordRows {
-    constructor(public from: number, public to: number) {}
+    constructor(public from: number, public to: number) { }
 
     applyNewSelectedNumber(selectedRowNumber: number): SelectedChordRows {
         if (this.from === this.to && selectedRowNumber === this.from) {

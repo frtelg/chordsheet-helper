@@ -1,30 +1,31 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from "react";
 
 const Input: FunctionComponent<
-    React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> & {
-        initialValue?: string;
-    }
+  React.DetailedHTMLProps<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    HTMLInputElement
+  > & { initialValue?: string }
 > = (props) => {
-    const [value, setValue] = useState(props.initialValue || '');
+  const [value, setValue] = useState(props.initialValue || "");
 
-    useEffect(() => {
-        setValue(props.initialValue || '');
-    }, [props.initialValue]);
+  useEffect(() => {
+    setValue(props.initialValue || "");
+  }, [props.initialValue]);
 
-    const inputProps = { ...props };
-    delete inputProps.initialValue;
+  const inputProps = { ...props };
+  delete inputProps.initialValue;
 
-    return (
-        <input
-            value={value}
-            onChange={(e) => {
-                e.preventDefault();
-                setValue(e.target.value);
-                if (inputProps.onChange) inputProps.onChange(e);
-            }}
-            {...inputProps}
-        />
-    );
+  return (
+    <input
+      value={value}
+      onChange={(e) => {
+        e.preventDefault();
+        setValue(e.target.value);
+        if (inputProps.onChange) inputProps.onChange(e);
+      }}
+      {...inputProps}
+    />
+  );
 };
 
 export default Input;
