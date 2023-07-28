@@ -1,37 +1,18 @@
-import { parseChords } from '@/lib/chord/parseChord';
-import findKey from '@/lib/key/findKey';
 import { determineSelectedRows, SelectedChordRows } from '@/lib/selectedrows/SelectedChordRows';
 import { transpose } from '@/lib/transposer/TransposerUtil';
-import NoteName from '@/model/enums/NoteName';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-
-interface ChordSheetState {
-    value: string[];
-    history: string[][];
-    selected: SelectedChordRows;
-    key?: NoteName;
-}
-
-function calculateKey(chordRows: string[]) {
-    const allChordsInOneString = chordRows.join(' ');
-    const chords = parseChords(allChordsInOneString);
-
-    return findKey(chords);
-}
 
 export const chordSheetSlice = createSlice({
     name: 'chordSheet',
     initialState: {
-        value: [],
-        history: [],
-        selected: {},
-        key: undefined,
-    } as ChordSheetState,
+        value: [] as string[],
+        history: [] as string[][],
+        selected: {} as SelectedChordRows,
+    },
     reducers: {
         setChords: (state, action: PayloadAction<string[]>) => {
             state.history.push(state.value);
             state.value = action.payload;
-            state.key = calculateKey(action.payload);
         },
         moveDown: (state, action: PayloadAction<number>) => {
             state.history.push(state.value);
@@ -55,7 +36,6 @@ export const chordSheetSlice = createSlice({
         transposeAll: (state, action: PayloadAction<number>) => {
             state.history.push(state.value);
             state.value = state.value.map((c) => (c ? transpose(c, action.payload) : c));
-            state.key = calculateKey(state.value);
         },
         resetChords: (state) => {
             state.history.push(state.value);
