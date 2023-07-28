@@ -1,6 +1,6 @@
-import NoteName from '@/model/enums/NoteName';
+import NoteName from '../enums/NoteName';
 import Chord from './Chord';
-import MusicNote from '@/model/note/MusicNote';
+import MusicNote from '../note/MusicNote';
 import { majorChordRegex } from './regex';
 
 export type Suspension = 'sus' | 'sus2' | 'sus4';

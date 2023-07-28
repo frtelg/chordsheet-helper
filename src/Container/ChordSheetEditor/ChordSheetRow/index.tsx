@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
-import Input from '@/components/Form/Input';
+import Input from '../../../components/Form/Input';
 import copy from 'copy-to-clipboard';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import {
@@ -10,8 +10,13 @@ import {
     mdiCheckboxBlankOutline,
     mdiContentPaste,
 } from '@mdi/js';
-import { moveDown, moveUp, pasteSelected, setSelected } from '@/redux/reducer/ChordSheetReducer';
-import ClickableIcon from '@/components/ClickableIcon';
+import {
+    moveDown,
+    moveUp,
+    pasteSelected,
+    setSelected,
+} from '../../../redux/reducer/ChordSheetReducer';
+import ClickableIcon from '../../../components/ClickableIcon';
 
 type ChordSheetRowProps = {
     index: number;

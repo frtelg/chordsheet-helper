@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { resetChords } from '@/redux/reducer/ChordSheetReducer';
-import { resetSongText, setSongText } from '@/redux/reducer/SongTextReducer';
+import { resetChords } from '../../redux/reducer/ChordSheetReducer';
+import { resetSongText, setSongText } from '../../redux/reducer/SongTextReducer';
 
 const SongTextInput: FunctionComponent = () => {
     const inputText = useSelector((state: ReduxState) => state.songText.value);

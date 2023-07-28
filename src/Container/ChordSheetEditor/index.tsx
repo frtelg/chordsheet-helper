@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleShowResult } from '@/redux/reducer/AppReducer';
-import { setChords } from '@/redux/reducer/ChordSheetReducer';
-import { setSongText } from '@/redux/reducer/SongTextReducer';
-import ChordSheetRow from '@/container/ChordSheetEditor/ChordSheetRow';
-import Transposer from '@/container/ChordSheetEditor/Transposer';
+import { toggleShowResult } from '../../redux/reducer/AppReducer';
+import { setChords } from '../../redux/reducer/ChordSheetReducer';
+import { setSongText } from '../../redux/reducer/SongTextReducer';
+import ChordSheetRow from '../../container/ChordSheetEditor/ChordSheetRow';
+import Transposer from '../../container/ChordSheetEditor/Transposer';
 import HelpersBar from './HelpersBar';
 
 const toSongTextArray = (text: string) => text.split('\n');
@@ -48,7 +48,7 @@ const SongTextInput: FunctionComponent = () => {
     };
 
     const onChordInputBlurHandler = (newValue: string, lineIndex: number) => {
-        const newChords = chords.map((v, i) => (i === lineIndex ? newValue : v));
+        const newChords = chords.map((v: string, i: number) => (i === lineIndex ? newValue : v));
         dispatch(setChords(newChords));
     };
 

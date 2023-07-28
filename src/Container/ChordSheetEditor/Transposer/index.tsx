@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { transposeAll } from '@/redux/reducer/ChordSheetReducer';
+import { transposeAll } from '../../../redux/reducer/ChordSheetReducer';
 import { mdiArrowUpBold, mdiArrowDownBold } from '@mdi/js';
-import ClickableIcon from '@/components/ClickableIcon';
+import ClickableIcon from '../../../components/ClickableIcon';
 
 const Transposer: FunctionComponent = () => {
     const dispatch = useDispatch();

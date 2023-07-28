@@ -1,5 +1,5 @@
-import { chordRegex, majorChordRegex } from '@/model/chord/regex';
-import MusicNote from '@/model/note/MusicNote';
+import { chordRegex, majorChordRegex } from '../../model/chord/regex';
+import MusicNote from '../../model/note/MusicNote';
 
 const chordLineRegex = `^((\\W+)?(${chordRegex})(\\W+)?)+$`;
 
