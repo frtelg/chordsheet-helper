@@ -1,6 +1,6 @@
-import NoteName from '../../model/enums/NoteName';
+import NoteName from '@/model/enums/NoteName';
 import MusicNote from '../../model/note/MusicNote';
-import Chord from '../../model/chord/Chord';
+import Chord from '@/model/chord/Chord';
 
 interface Scale {
     root: NoteName;

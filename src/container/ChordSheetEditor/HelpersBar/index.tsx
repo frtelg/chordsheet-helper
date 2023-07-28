@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import ClickableIcon from '../../../components/ClickableIcon/ClickableIcon';
-import { clearSelected, undo } from '../../../redux/reducer/ChordSheetReducer';
+import ClickableIcon from '@/components/ClickableIcon';
+import { clearSelected, undo } from '@/redux/reducer/ChordSheetReducer';
 import { mdiBorderNone, mdiUndoVariant } from '@mdi/js';
 
 interface HelpersBarProps {
