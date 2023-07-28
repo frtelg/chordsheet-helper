@@ -16,7 +16,7 @@ import {
     pasteSelected,
     setSelected,
 } from '../../../redux/reducer/ChordSheetReducer';
-import ClickableIcon from '../../../components/ClickableIcon/ClickableIcon';
+import ClickableIcon from '../../../components/ClickableIcon';
 
 type ChordSheetRowProps = {
     index: number;

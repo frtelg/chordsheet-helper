@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toggleShowResult } from '../../redux/reducer/AppReducer';
 import { setChords } from '../../redux/reducer/ChordSheetReducer';
 import { setSongText } from '../../redux/reducer/SongTextReducer';
-import ChordSheetRow from './ChordSheetRow/ChordSheetRow';
-import Transposer from './Transposer/Transposer';
-import HelpersBar from './HelpersBar/HelpersBar';
+import ChordSheetRow from '../../container/ChordSheetEditor/ChordSheetRow';
+import Transposer from '../../container/ChordSheetEditor/Transposer';
+import HelpersBar from './HelpersBar';
 
 const toSongTextArray = (text: string) => text.split('\n');
 

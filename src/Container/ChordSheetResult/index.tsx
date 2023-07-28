@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import DownloadTextAsFileLink from '../../components/DownloadTextAsFileLink/DownloadTextAsFileLink';
+import DownloadTextAsFileLink from '../../components/DownloadTextAsFileLink';
 import { toggleShowResult } from '../../redux/reducer/AppReducer';
 
 type ChordSheetLine = {
