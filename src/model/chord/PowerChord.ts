@@ -1,4 +1,4 @@
-import Chord from '../chord/Chord';
+import Chord from '@/model/chord/Chord';
 import MusicNote from '../note/MusicNote';
 import NoteName from '../enums/NoteName';
 
