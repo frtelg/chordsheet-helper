@@ -63,7 +63,7 @@ input {
 }
 
 .ChordSheetFormContainer {
-  margin-top: 5%;
+  margin-top: 8%;
 }
 
 .ChordSheetFormContainer form {
@@ -113,25 +113,33 @@ input {
   margin-left: 10px;
 }
 
-.EditLyricsToggler {
+.FixedHeader {
   width: 100%;
-  height: 5%;
+  height: 50px;
   min-width: 200px;
-  display: flex;
   position: fixed;
-  align-items: center;
-  justify-content: flex-start;
   margin: 0;
   z-index: 10;
   background-color: white;
   opacity: 80%;
+  display: block;
 }
 
-.EditLyricsToggler input {
+.HelpersBar {
+  width: 100%;
+  height: 5%;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+}
+
+.HelpersBar input {
   width: 20px;
 }
 
-.EditLyricsToggler label {
+.HelpersBar label {
   min-width: 200px;
   height: 100%;
   margin-right: 50px;
@@ -140,13 +148,14 @@ input {
   display: flex;
 }
 
-.EditLyricsToggler button {
+.HelpersBar button {
   height: 25px;
   margin: 0 5px;
 }
 
 .Transposer {
-  justify-content: center;
+  margin-top: 15px;
+  justify-content: flex-start;
   align-items: center;
   display: flex;
 }

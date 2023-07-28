@@ -10,7 +10,8 @@ type ChordSheetLine = {
 
 const ChordSheetResult = () => {
     const songText = useSelector((state: ReduxState) => state.songText.value);
-    const chords = useSelector((state: ReduxState) => state.chordSheet.value);
+    const { value: chords, key } = useSelector((state: ReduxState) => state.chordSheet);
+
     const dispatch = useDispatch();
 
     const doToggleEditMode = () => {
@@ -34,6 +35,9 @@ const ChordSheetResult = () => {
     return (
         <div className="ChordSheetResult">
             <div className="ChordSheetText" style={{ whiteSpace: 'pre' }}>
+                {`Key: ${key ?? 'Unknown'}`}
+                <br />
+                <br />
                 {chordSheetList.map((r, i) => (
                     <React.Fragment key={i}>
                         {r.lineType === 'chord' ? <b>{r.text}</b> : r.text}
