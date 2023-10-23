@@ -43,9 +43,17 @@ export const getSharpAlternative = (flatNote: NoteName): string => {
 export const isFlat = (note: NoteName) => note.length > 1;
 
 export const shouldKeyUseSharps = (key: NoteName): boolean => {
-    const keysThatUseSharps = [NoteName.G, NoteName.D, NoteName.A, NoteName.E, NoteName.B, NoteName.Gflat, NoteName.Dflat];
-    
+    const keysThatUseSharps = [
+        NoteName.G,
+        NoteName.D,
+        NoteName.A,
+        NoteName.E,
+        NoteName.B,
+        NoteName.Gflat,
+        NoteName.Dflat,
+    ];
+
     return keysThatUseSharps.includes(key);
-}
+};
 
 export default NoteName;

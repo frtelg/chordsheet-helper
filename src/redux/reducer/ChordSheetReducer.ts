@@ -58,7 +58,7 @@ export const chordSheetSlice = createSlice({
             const newValue = state.value.map((c) => (c ? transpose(c, action.payload) : c));
 
             const key = calculateKey(newValue);
-            
+
             if (key && shouldKeyUseSharps(key)) {
                 state.value = newValue.map((n) => transformFlatsToSharps(n));
                 state.key = getSharpAlternative(key);
