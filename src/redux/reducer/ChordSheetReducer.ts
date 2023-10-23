@@ -1,15 +1,16 @@
 import { parseChords } from '@/lib/chord/parseChord';
 import findKey from '@/lib/key/findKey';
+import { transformFlatsToSharps } from '@/lib/note/NoteUtil';
 import { determineSelectedRows, SelectedChordRows } from '@/lib/selectedrows/SelectedChordRows';
 import { transpose } from '@/lib/transposer/TransposerUtil';
-import NoteName from '@/model/enums/NoteName';
+import { shouldKeyUseSharps, getSharpAlternative } from '@/model/enums/NoteName';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface ChordSheetState {
     value: string[];
     history: string[][];
     selected: SelectedChordRows;
-    key?: NoteName;
+    key?: string;
 }
 
 function calculateKey(chordRows: string[]) {
@@ -54,8 +55,17 @@ export const chordSheetSlice = createSlice({
         },
         transposeAll: (state, action: PayloadAction<number>) => {
             state.history.push(state.value);
-            state.value = state.value.map((c) => (c ? transpose(c, action.payload) : c));
-            state.key = calculateKey(state.value);
+            const newValue = state.value.map((c) => (c ? transpose(c, action.payload) : c));
+
+            const key = calculateKey(newValue);
+            
+            if (key && shouldKeyUseSharps(key)) {
+                state.value = newValue.map((n) => transformFlatsToSharps(n));
+                state.key = getSharpAlternative(key);
+            } else {
+                state.value = newValue;
+                state.key = key;
+            }
         },
         resetChords: (state) => {
             state.history.push(state.value);

@@ -58,7 +58,7 @@ describe('parseChord', () => {
         ['Gdim', new DiminishedTriad(Note.G)],
         ['A♭m7b5', new DiminishedTriad(Note.Aflat)],
         ['Aø', new DiminishedTriad(Note.A)],
-        ['Bb', new DiminishedTriad(Note.Bflat)],
+        ['Bbdim', new DiminishedTriad(Note.Bflat)],
         ['B°', new DiminishedTriad(Note.B)],
     ])('should parse %s chord as diminished triad %p', (chordString, expectedChord) => {
         const triad = parseChord(chordString);

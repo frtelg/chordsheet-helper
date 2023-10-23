@@ -1,7 +1,6 @@
 import { FLAT, FLAT_SYMBOL, SHARP, SHARP_SYMBOL } from '@/constants/musicconstants';
 import NoteName, { getNoteByKey } from '@/model/enums/NoteName';
-
-const mod = (target: number, m: number) => ((target % m) + m) % m;
+import { mod } from '@/lib/math';
 
 export default class MusicNote {
     static parse(noteString: string): MusicNote {
