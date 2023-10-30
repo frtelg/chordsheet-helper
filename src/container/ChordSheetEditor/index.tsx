@@ -31,7 +31,7 @@ const SongTextInput: FunctionComponent = () => {
             ];
             dispatch(setChords(newChords));
         }
-    }, [songText]);
+    }, [chords, dispatch, songText]);
 
     const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
