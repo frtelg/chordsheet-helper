@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { resetChords, setChords } from '@/redux/reducer/ChordSheetReducer';
 import { resetSongText, setSongText } from '@/redux/reducer/SongTextReducer';
@@ -22,13 +22,19 @@ const SongTextInput: FunctionComponent = () => {
     const inputText = useSelector((state: ReduxState) => state.songText.value);
     const dispatch = useDispatch();
 
-    const dispatchSongText = (text: string) => {
-        dispatch(setSongText(text));
-    };
+    const dispatchSongText = useCallback(
+        (text: string) => {
+            dispatch(setSongText(text));
+        },
+        [dispatch]
+    );
 
-    const dispatchChords = (chords: string[]) => {
-        dispatch(setChords(chords));
-    };
+    const dispatchChords = useCallback(
+        (chords: string[]) => {
+            dispatch(setChords(chords));
+        },
+        [dispatch]
+    );
 
     const changedHandlerHandler = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         e.preventDefault();
@@ -56,8 +62,10 @@ const SongTextInput: FunctionComponent = () => {
         dispatchSongText(v);
     };
 
-    const parseChordsAndSongTextHandler = () => () =>
-        parseChordsAndSongText(firstEntry, dispatchSongText, dispatchChords);
+    const parseChordsAndSongTextHandler = useCallback(
+        () => parseChordsAndSongText(firstEntry, dispatchSongText, dispatchChords),
+        [firstEntry, dispatchSongText, dispatchChords]
+    );
 
     const handleTab = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Tab') {
