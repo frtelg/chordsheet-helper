@@ -1,0 +1,20 @@
+{
+  "applinks": {
+      "details": [
+           {
+             "appIDs": ["M6ZA8QEGA3.info.postcodelottery.ios.friendslottery", "M6ZA8QEGA3.info.postcodelottery.ios.friendslottery.debug"],
+             "components": [
+               {
+                  "#": "no_universal_links",
+                  "exclude": true,
+                  "comment": "Matches any URL with a fragment that equals no_universal_links and instructs the system not to open it as a universal link."
+               },
+               {
+                  "/": "/vipkaart/aanbod/*",
+                  "comment": "We want universal links for every URL with a path that starts with /vipkaart/aanbod/."
+               }
+            ]
+           }
+       ]
+   }
+}
