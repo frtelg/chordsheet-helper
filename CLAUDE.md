@@ -17,7 +17,17 @@ Run a single test file:
 yarn test src/lib/chord/parseChord.spec.ts
 ```
 
-Node version: 20.5.0 (see `.nvmrc`). Pre-commit hooks run gitleaks (secrets scan) and lint-staged (ESLint + Prettier) via Husky.
+Node version: 24 (see `.nvmrc`). Pre-commit hooks run gitleaks (secrets scan) and lint-staged (ESLint + Prettier) via Husky.
+
+## Quality gate — run before every commit
+
+Before committing any change, run the full quality gate in this order:
+
+1. **Unit tests** — `yarn test --watchAll=false` — all suites must pass
+2. **Production build** — `yarn build` — must complete without errors
+3. **Dev server smoke test** — start `yarn dev`, open http://localhost:3000 with Playwright, verify the app loads and core interactions work (type lyrics, confirm chord detection modal, check editor renders with correct key), then stop the server
+
+All three steps must pass. Do not commit if any step fails.
 
 ## Git hooks — never skip
 
