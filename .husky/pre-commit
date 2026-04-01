@@ -1,4 +1,5 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+gitleaks protect --staged --redact --no-banner
 npx lint-staged
