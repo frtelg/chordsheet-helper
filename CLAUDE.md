@@ -29,6 +29,21 @@ Before committing any change, run the full quality gate in this order:
 
 All three steps must pass. Do not commit if any step fails.
 
+## Commit messages and PR titles
+
+Follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+
+```
+<type>(<optional scope>): <short description>
+```
+
+Common types: `feat`, `fix`, `chore`, `refactor`, `test`, `docs`, `style`, `perf`, `ci`.
+
+Examples:
+- `feat(transposer): add support for sharp notation`
+- `fix(parseChord): handle edge case for diminished seventh`
+- `chore: upgrade Node.js to v24`
+
 ## Git hooks — never skip
 
 **Never use `--no-verify` or any other mechanism to bypass pre-commit or pre-push hooks.** If a hook fails, fix the underlying issue before committing. This applies without exception, even when explicitly asked to commit quickly.
