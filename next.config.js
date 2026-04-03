@@ -1,12 +1,4 @@
-process.env.__NEXT_PRIVATE_PREBUNDLED_REACT = 'next';
-
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-    turbopack: {
-        root: __dirname,
-    },
-};
+const nextConfig = {};
 
-module.exports = {
-    ...nextConfig,
-};
+module.exports = nextConfig;
