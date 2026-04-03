@@ -29,7 +29,10 @@ export default class SuspededTriad implements Chord {
         return new SuspededTriad(root.note, matches.suspension);
     }
 
-    constructor(public root: NoteName, suspensionNote: Suspension) {
+    constructor(
+        public root: NoteName,
+        suspensionNote: Suspension
+    ) {
         const rootNote = new MusicNote(root);
         const suspendedNote = getSuspensionNote(rootNote, suspensionNote);
         const perfectFifth = rootNote.getNoteAtInterval(7);

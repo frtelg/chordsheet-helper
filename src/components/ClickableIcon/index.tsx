@@ -10,8 +10,7 @@ interface ClickableIconProps extends IconProps {
 const ClickableIcon: FunctionComponent<ClickableIconProps> = ({ onClick, disabled, ...props }) => {
     return (
         <span
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onClick={disabled ? () => {} : onClick}
+            onClick={disabled ? undefined : onClick}
             style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
         >
             <Icon size="1rem" color={disabled ? 'grey' : 'black'} {...props} />

@@ -14,24 +14,22 @@ const SongTextInput: FunctionComponent = () => {
     const chords = useSelector((state: ReduxState) => state.chordSheet.value);
     const dispatch = useDispatch();
     const [instrumentalPartsIndexes, setInstrumentalPartIndexes] = useState<number[]>([]);
-    const [songTextArray, setSongTextArray] = useState(toSongTextArray(songText));
     const [editLyricsToggled, setEditLyricsToggled] = React.useState(false);
+    const songTextArray = toSongTextArray(songText);
 
     const toggeEditLyrics = () => {
         setEditLyricsToggled(!editLyricsToggled);
     };
 
     useEffect(() => {
-        const songTextAsArray = toSongTextArray(songText);
-        setSongTextArray(songTextAsArray);
-        if (songTextAsArray.length > chords.length) {
+        if (songTextArray.length > chords.length) {
             const newChords = [
                 ...chords,
-                ...new Array<string>(songTextAsArray.length - chords.length).map(() => ''),
+                ...new Array<string>(songTextArray.length - chords.length).fill(''),
             ];
             dispatch(setChords(newChords));
         }
-    }, [chords, dispatch, songText]);
+    }, [chords, dispatch, songTextArray]);
 
     const submitHandler = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

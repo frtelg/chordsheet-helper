@@ -24,18 +24,12 @@
         "dev": "next dev --webpack",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint",
-        "lint:fix": "next lint --fix",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
         "test": "jest",
         "e2e": "playwright test",
         "e2e:headed": "playwright test --headed",
         "e2e:ui": "playwright test --ui"
-    },
-    "eslintConfig": {
-        "extends": [
-            "react-app",
-            "react-app/jest"
-        ]
     },
     "browserslist": {
         "production": [
@@ -62,7 +56,7 @@
         "@types/react-dom": "^19.2.3",
         "@typescript-eslint/eslint-plugin": "^8.58.0",
         "@typescript-eslint/parser": "^8.58.0",
-        "eslint": "^10.1.0",
+        "eslint": "^9.37.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-prettier": "^5.5.5",
         "eslint-plugin-react": "^7.37.5",
