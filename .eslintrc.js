@@ -22,4 +22,12 @@ module.exports = {
         'plugin:prettier/recommended',
         'plugin:react-hooks/recommended',
     ],
+    overrides: [
+        {
+            files: ['e2e/**/*.ts'],
+            parserOptions: {
+                project: ['./e2e/tsconfig.json'],
+            },
+        },
+    ],
 };
