@@ -46,6 +46,9 @@ yarn-error.log*
 .claude/worktrees/
 .claude/plans/
 
+# OpenCode (local tool integration, not project source)
+.opencode/
+
 .playwright-mcp/
 
 # Playwright e2e
