@@ -26,7 +26,10 @@
         "start": "next start",
         "lint": "next lint",
         "lint:fix": "next lint --fix",
-        "test": "jest"
+        "test": "jest",
+        "e2e": "playwright test",
+        "e2e:headed": "playwright test --headed",
+        "e2e:ui": "playwright test --ui"
     },
     "eslintConfig": {
         "extends": [
@@ -48,6 +51,7 @@
     },
     "devDependencies": {
         "@next/eslint-plugin-next": "^16.2.2",
+        "@playwright/test": "^1.59.1",
         "@testing-library/dom": "^10.4.1",
         "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/react": "^16.3.2",

@@ -12,6 +12,7 @@ const config = {
     // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
 
     testEnvironment: 'jest-environment-jsdom',
+    testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/e2e/'],
     // testEnvironmentOptions: {
     //     url: 'http://localhost:3000',
     // },
