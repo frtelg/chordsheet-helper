@@ -45,6 +45,28 @@
 
   /* Overlay */
   --color-overlay: rgba(1, 4, 9, 0.5);
+
+  /* Spacing scale (multiples of 4 px) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Layout */
+  --header-height: 3.5rem;
+  --panel-gap: 2rem;
+  --panel-padding: 1.5rem;
+  --content-top-offset: 5rem; /* header + some breathing room */
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
 }
 
 body {
@@ -144,37 +166,39 @@ button.btn-danger:hover {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
-  padding: 25px;
+  padding: var(--panel-padding);
 }
 
 .App {
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   display: flex;
-  position: absolute;
-  align-items: center;
+  align-items: flex-start;
   justify-content: flex-start;
-  padding: 25px;
+  gap: var(--panel-gap);
+  padding: var(--panel-padding);
+  padding-top: calc(var(--header-height) + var(--space-6));
+  box-sizing: border-box;
 }
 
 .ChordSheetEditor {
   display: flex;
   flex-direction: column;
-  width: 60%;
-  height: 100%;
+  flex: 1;
+  min-width: 0;
   position: relative;
 }
 
 .SongTextRowContainer {
   display: flex;
   flex-direction: column;
-  margin-bottom: 10px;
-  min-height: 10px;
+  margin-bottom: var(--space-3);
+  min-height: var(--space-3);
   width: 90%;
 }
 
 .ChordSheetFormContainer {
-  margin-top: 8%;
+  margin-top: var(--space-4);
 }
 
 .ChordSheetFormContainer form {
@@ -184,7 +208,7 @@ button.btn-danger:hover {
 
 .ChordSheetEditor input {
   width: 80%;
-  margin-bottom: 1px;
+  margin-bottom: var(--space-1);
 }
 
 .ChordSheetEditor input.ChordInput {
@@ -192,7 +216,7 @@ button.btn-danger:hover {
 }
 
 .ChordSheetEditor button {
-  margin-top: 0.625rem;
+  margin-top: var(--space-4);
 }
 
 .ChordSheetEditor a {
@@ -200,100 +224,122 @@ button.btn-danger:hover {
   text-decoration: underline;
 }
 
+.ResultButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
 .ResultButtons button {
-  margin-right: 0.625rem;
+  margin-right: 0;
 }
 
 .ChordInputContainer {
   display: flex;
+  align-items: center;
   position: relative;
 }
 
 .ChordInputContainer a {
   cursor: pointer;
-  margin-left: 10px;
+  margin-left: var(--space-3);
 }
 
 .LyricInputContainer {
   display: flex;
+  align-items: center;
   position: relative;
 }
 
 .LyricInputContainer a {
   cursor: pointer;
-  margin-left: 10px;
+  margin-left: var(--space-3);
 }
 
 .FixedHeader {
   width: 100%;
-  height: 50px;
-  min-width: 200px;
+  height: var(--header-height);
   position: fixed;
+  top: 0;
+  left: 0;
   margin: 0;
   z-index: 10;
   background-color: var(--color-bg);
-  opacity: 80%;
-  display: block;
+  border-bottom: 1px solid var(--color-border-muted);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 var(--panel-padding);
+  box-sizing: border-box;
 }
 
 .HelpersBar {
   width: 100%;
-  height: 5%;
-  min-width: 200px;
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  margin: 0;
+  gap: var(--space-3);
 }
 
 .HelpersBar input {
-  width: 20px;
+  width: 1.125rem;
+  height: 1.125rem;
 }
 
 .HelpersBar label {
-  min-width: 200px;
-  height: 100%;
-  margin-right: 50px;
-  justify-content: center;
-  align-items: center;
   display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .HelpersBar button {
-  margin: 0 0.3125rem;
+  margin: 0;
 }
 
 .Transposer {
-  margin-top: 15px;
-  justify-content: flex-start;
-  align-items: center;
   display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
 }
 
 .ChordSheetResult {
-  margin-bottom: 25px;
-  width: 60%;
-  height: 100%;
-  margin-top: 5%;
+  flex: 1;
+  min-width: 0;
+  padding-top: var(--space-4);
 }
 
 .ChordSheetText {
-  margin-bottom: 15px;
+  margin-bottom: var(--space-6);
+  line-height: var(--line-height-normal);
 }
 
 .SongTextInput {
-  width: 40%;
-  height: 100%;
-  position: relative;
+  width: 38%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--color-border-muted);
+  padding-right: var(--panel-gap);
 }
 
 .SongTextInput textarea {
-  width: 90%;
-  height: 85%;
+  width: 100%;
+  flex: 1;
+  min-height: 60vh;
+  box-sizing: border-box;
 }
 
 .SongTextInput button {
-  margin-top: 0.75rem;
+  margin-top: var(--space-3);
 }
 
 .modal-overlay {
@@ -323,27 +369,26 @@ button.btn-danger:hover {
 
 .modal-close {
   position: absolute;
-  top: 0;
-  right: 0;
-  margin: 10px;
+  top: var(--space-3);
+  right: var(--space-3);
   cursor: pointer;
 }
 
 .ProcessChordLinesModal {
   max-width: 500px;
-  height: 100px;
   text-align: center;
+  padding: 0 var(--space-6);
 }
 
 .ProcessChordLinesModalButtons {
   display: flex;
   flex-direction: row;
   justify-content: center;
+  gap: var(--space-3);
   width: 100%;
-  margin-top: 40px;
+  margin-top: var(--space-8);
 }
 
 .ProcessChordLinesModalButtons button {
-  margin: 0.625rem;
   min-width: 5rem;
 }
