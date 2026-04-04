@@ -93,11 +93,15 @@ const SongTextInput: FunctionComponent = () => {
                     parseChordsAndSongTextHandler();
                 }}
             />
+            <label className="SongTextInputLabel" htmlFor="song-text-input">
+                Lyrics
+            </label>
             <textarea
+                id="song-text-input"
                 value={inputText}
                 onChange={changedHandlerHandler}
                 onKeyDown={handleTab}
-                placeholder="Enter or paste song lyrics here"
+                placeholder="Paste or type your song lyrics here…"
             />
             <button
                 type="button"
