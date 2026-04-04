@@ -542,6 +542,67 @@ button.btn-danger:hover {
 }
 
 /* ============================================================
+   Focus & Interaction States
+   ============================================================ */
+
+/* Skip-link for keyboard navigation (visually hidden until focused) */
+.skip-link {
+  position: absolute;
+  top: -999px;
+  left: var(--panel-padding);
+  z-index: 200;
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-on-accent);
+  background-color: var(--color-accent);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: var(--space-3);
+}
+
+/* Consistent keyboard focus ring on all interactive elements */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Remove default focus ring — rely on :focus-visible above */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Buttons: active (pressed) state */
+button:active {
+  transform: translateY(1px);
+}
+
+/* Clickable icon wrapper — show focus ring and pointer */
+span[onClick],
+span[role='button'] {
+  border-radius: var(--radius-sm);
+}
+
+span[onClick]:focus-visible,
+span[role='button']:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Hover transition on the "Add row for instrumental part" link */
+.ChordSheetEditor a {
+  transition: color 0.1s ease;
+}
+
+.ChordSheetEditor a:hover {
+  color: var(--color-accent-hover);
+}
+
+/* ============================================================
    Mobile Responsiveness
    ============================================================ */
 
