@@ -13,7 +13,11 @@ const ClickableIcon: FunctionComponent<ClickableIconProps> = ({ onClick, disable
             onClick={disabled ? undefined : onClick}
             style={{ cursor: disabled ? 'not-allowed' : 'pointer' }}
         >
-            <Icon size="1rem" color={disabled ? 'grey' : 'black'} {...props} />
+            <Icon
+                size="1rem"
+                color={disabled ? 'var(--color-text-muted)' : 'var(--color-text)'}
+                {...props}
+            />
         </span>
     );
 };
