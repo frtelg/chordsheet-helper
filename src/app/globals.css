@@ -97,7 +97,7 @@ code {
    Chord and lyric fields MUST stay monospace for correct alignment.
    ============================================================ */
 
-input,
+input:not([type='checkbox']),
 textarea {
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
@@ -113,18 +113,18 @@ textarea {
   appearance: none;
 }
 
-input:hover,
+input:not([type='checkbox']):hover,
 textarea:hover {
   border-color: var(--color-text-muted);
 }
 
-input:focus,
+input:not([type='checkbox']):focus,
 textarea:focus {
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px var(--color-accent-subtle);
 }
 
-input:disabled {
+input:not([type='checkbox']):disabled {
   background-color: var(--color-surface);
   color: var(--color-text-muted);
   cursor: not-allowed;
