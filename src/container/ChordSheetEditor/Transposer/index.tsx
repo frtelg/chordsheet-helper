@@ -24,7 +24,7 @@ const Transposer: FunctionComponent = () => {
                 title="Transpose up"
                 onClick={transposeUp}
             />
-            <div style={{ marginLeft: '5pt' }}>{`Key: ${key ?? 'Unknown, enter chords'}`}</div>
+            <span className="TransposerKey">{key ? `Key: ${key}` : 'Key: ?'}</span>
         </div>
     );
 };
