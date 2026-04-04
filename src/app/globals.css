@@ -382,6 +382,9 @@ button.btn-danger:hover {
   width: 100%;
   height: 100%;
   background-color: var(--color-overlay);
+  /* subtle backdrop blur for depth */
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .modal {
@@ -390,26 +393,45 @@ button.btn-danger:hover {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 101;
-  width: 35%;
-  height: 35%;
+  width: min(90vw, 28rem);
   background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(1, 4, 9, 0.16), 0 2px 8px rgba(1, 4, 9, 0.08);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-around;
+  padding: var(--space-8) var(--space-6) var(--space-6);
 }
 
 .modal-close {
   position: absolute;
-  top: var(--space-3);
-  right: var(--space-3);
+  top: var(--space-4);
+  right: var(--space-4);
   cursor: pointer;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  line-height: 1;
+  /* Override global button styles */
+  background: none;
+  border: none;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: color 0.1s ease, background-color 0.1s ease;
+}
+
+.modal-close:hover {
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  border-color: transparent;
 }
 
 .ProcessChordLinesModal {
-  max-width: 500px;
   text-align: center;
-  padding: 0 var(--space-6);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  line-height: var(--line-height-normal);
 }
 
 .ProcessChordLinesModalButtons {
@@ -418,7 +440,7 @@ button.btn-danger:hover {
   justify-content: center;
   gap: var(--space-3);
   width: 100%;
-  margin-top: var(--space-8);
+  margin-top: var(--space-6);
 }
 
 .ProcessChordLinesModalButtons button {
