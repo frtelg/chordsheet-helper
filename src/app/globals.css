@@ -1,4 +1,24 @@
 :root {
+  /* Font families */
+  --font-ui: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', Courier, monospace;
+
+  /* Font sizes */
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+
+  /* Font weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Line heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+
   /* Color palette */
   --color-bg: #ffffff;
   --color-surface: #f6f8fa;
@@ -29,7 +49,9 @@
 
 body {
   margin: 0;
-  font-family: "Courier New", Courier, monospace;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
@@ -44,18 +66,24 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
 }
 
+/* Chord and lyric inputs must use monospace for correct alignment */
 textarea {
-  font-family: inherit;
-  font-size: inherit;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
 }
 
 input {
-  font-family: inherit;
-  font-size: inherit;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+/* Result view uses monospace for chord sheet alignment */
+.ChordSheetResult {
+  font-family: var(--font-mono);
 }
 
 .NotFound {
@@ -192,7 +220,6 @@ input {
 }
 
 .ChordSheetResult {
-  font-family: "Courier New", Courier, monospace;
   margin-bottom: 25px;
   width: 60%;
   height: 100%;
