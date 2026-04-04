@@ -540,3 +540,60 @@ button.btn-danger:hover {
 .ProcessChordLinesModalButtons button {
   min-width: 5rem;
 }
+
+/* ============================================================
+   Mobile Responsiveness
+   ============================================================ */
+
+@media (max-width: 768px) {
+  :root {
+    --panel-padding: 1rem;
+    --panel-gap: 1rem;
+    --header-height: 3rem;
+  }
+
+  /* Stack panels vertically on small screens */
+  .App {
+    flex-direction: column;
+    padding-top: calc(var(--header-height) + var(--space-4));
+  }
+
+  .SongTextInput {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border-muted);
+    padding-right: 0;
+    padding-bottom: var(--panel-gap);
+  }
+
+  .SongTextInput textarea {
+    min-height: 30vh;
+  }
+
+  .ChordSheetEditor {
+    width: 100%;
+  }
+
+  .ChordSheetResult {
+    width: 100%;
+  }
+
+  /* Narrower chord/lyric inputs on mobile */
+  .ChordSheetEditor input {
+    width: 100%;
+  }
+
+  .SongTextRowContainer {
+    width: 100%;
+  }
+
+  /* Toolbar: wrap if needed */
+  .FixedHeader {
+    padding: 0 var(--panel-padding);
+    overflow-x: auto;
+  }
+
+  .HelpersBar label {
+    font-size: var(--font-size-xs);
+  }
+}
