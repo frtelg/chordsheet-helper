@@ -35,13 +35,12 @@ const ChordSheetResult = () => {
     return (
         <div className="ChordSheetResult">
             <div className="ChordSheetText" style={{ whiteSpace: 'pre' }}>
-                {`Key: ${key ?? 'Unknown'}`}
-                <br />
-                <br />
+                <span className="ResultKey">{`Key: ${key ?? 'Unknown'}`}</span>
+                {'\n\n'}
                 {chordSheetList.map((r, i) => (
                     <React.Fragment key={i}>
                         {r.lineType === 'chord' ? <b>{r.text}</b> : r.text}
-                        <br />
+                        {'\n'}
                     </React.Fragment>
                 ))}
             </div>
