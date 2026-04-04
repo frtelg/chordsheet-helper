@@ -92,15 +92,47 @@ code {
   font-size: var(--font-size-sm);
 }
 
-/* Chord and lyric inputs must use monospace for correct alignment */
+/* ============================================================
+   Inputs & Textarea
+   Chord and lyric fields MUST stay monospace for correct alignment.
+   ============================================================ */
+
+input,
 textarea {
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-input {
-  font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
+input:hover,
+textarea:hover {
+  border-color: var(--color-text-muted);
+}
+
+input:focus,
+textarea:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-subtle);
+}
+
+input:disabled {
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+textarea {
+  resize: vertical;
+  line-height: var(--line-height-normal);
 }
 
 /* Result view uses monospace for chord sheet alignment */
