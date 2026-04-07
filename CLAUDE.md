@@ -25,7 +25,7 @@ Before committing any change, run the full quality gate in this order:
 
 1. **Unit tests** — `yarn test --watchAll=false` — all suites must pass
 2. **Production build** — `yarn build` — must complete without errors
-3. **Dev server smoke test** — start `yarn dev`, open http://localhost:3000 with Playwright, verify the app loads and core interactions work (type lyrics, confirm chord detection modal, check editor renders with correct key), then stop the server
+3. **E2E tests** — `yarn playwright test` — all 27 tests must pass (Playwright manages the dev server automatically)
 
 All three steps must pass. Do not commit if any step fails.
 
