@@ -92,7 +92,9 @@ const SongTextInput: FunctionComponent = () => {
                             />
                         )
                     )}
-                    <button type="submit">Submit changes</button>
+                    <button type="submit" className="btn-primary">
+                        Submit changes
+                    </button>
                 </form>
             </div>
         </div>

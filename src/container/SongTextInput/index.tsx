@@ -105,7 +105,7 @@ const SongTextInput: FunctionComponent = () => {
             >
                 Paste from clipboard
             </button>
-            <button type="button" onClick={handleReset}>
+            <button type="button" className="btn-danger" onClick={handleReset}>
                 Reset
             </button>
         </div>

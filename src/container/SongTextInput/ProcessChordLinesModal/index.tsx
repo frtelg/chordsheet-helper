@@ -19,7 +19,9 @@ const ProcessChordLinesModal: FunctionComponent<ProcessChordLinesModalProps> = (
                 chords?
                 <div className="ProcessChordLinesModalButtons">
                     <button onClick={onClose}>No, thanks</button>
-                    <button onClick={processChordLines}>Yes</button>
+                    <button className="btn-primary" onClick={processChordLines}>
+                        Yes
+                    </button>
                 </div>
             </div>
         </Modal>
