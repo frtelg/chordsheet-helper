@@ -6,6 +6,8 @@ import { setSongText } from '@/redux/reducer/SongTextReducer';
 import ChordSheetRow from '@/container/ChordSheetEditor/ChordSheetRow';
 import Transposer from '@/container/ChordSheetEditor/Transposer';
 import HelpersBar from './HelpersBar';
+import Icon from '@mdi/react';
+import { mdiMusicNote } from '@mdi/js';
 
 const toSongTextArray = (text: string) => text.split('\n');
 
@@ -55,7 +57,18 @@ const SongTextInput: FunctionComponent = () => {
 
     const noSongTextSupplied = songTextArray.filter((t) => t.trim() !== '').length === 0;
 
-    if (noSongTextSupplied) return null;
+    if (noSongTextSupplied) {
+        return (
+            <div className="ChordSheetEditor EmptyState">
+                <Icon path={mdiMusicNote} size="3rem" color="var(--color-border)" />
+                <h2 className="EmptyStateTitle">Your chord sheet will appear here</h2>
+                <p className="EmptyStateDescription">
+                    Paste or type your song lyrics on the left to get started. Each line becomes a
+                    chord+lyric row you can edit and transpose.
+                </p>
+            </div>
+        );
+    }
 
     return (
         <div className="ChordSheetEditor">

@@ -457,6 +457,17 @@ button.btn-danger:hover {
   padding-right: var(--panel-gap);
 }
 
+.SongTextInputLabel {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
 .SongTextInput textarea {
   width: 100%;
   flex: 1;
@@ -539,6 +550,38 @@ button.btn-danger:hover {
 
 .ProcessChordLinesModalButtons button {
   min-width: 5rem;
+}
+
+/* ============================================================
+   Empty State / Onboarding
+   ============================================================ */
+
+.EmptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-12) var(--space-8);
+  color: var(--color-text-muted);
+  gap: var(--space-4);
+}
+
+.EmptyStateTitle {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.EmptyStateDescription {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  line-height: var(--line-height-normal);
+  max-width: 28rem;
 }
 
 /* ============================================================
