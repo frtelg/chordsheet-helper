@@ -17,7 +17,7 @@ test.describe('Reset', () => {
 
         await app.resetButton.click();
 
-        await expect(app.chordEditor).not.toBeVisible();
+        await expect(app.page.locator('.ChordSheetFormContainer')).not.toBeVisible();
     });
 
     test('allows fresh input after reset', async ({ app }) => {

@@ -1,4 +1,4 @@
-import appReducer, { toggleShowResult } from './AppReducer';
+import appReducer, { toggleShowResult, setOnsongFormat } from './AppReducer';
 
 describe('AppReducer', () => {
     describe('toggleShowResult', () => {
@@ -14,6 +14,24 @@ describe('AppReducer', () => {
             const action = toggleShowResult();
             const state = appReducer(initialState, action);
             expect(state.showResult).toEqual(false);
+        });
+    });
+
+    describe('onsongFormat', () => {
+        it('should default to chords-over-lyrics', () => {
+            const state = appReducer(undefined, { type: '@@INIT' });
+            expect(state.onsongFormat).toEqual('chords-over-lyrics');
+        });
+
+        it('should update onsongFormat to bracketed', () => {
+            const state = appReducer(undefined, setOnsongFormat('bracketed'));
+            expect(state.onsongFormat).toEqual('bracketed');
+        });
+
+        it('should update onsongFormat back to chords-over-lyrics', () => {
+            const intermediate = appReducer(undefined, setOnsongFormat('bracketed'));
+            const state = appReducer(intermediate, setOnsongFormat('chords-over-lyrics'));
+            expect(state.onsongFormat).toEqual('chords-over-lyrics');
         });
     });
 });

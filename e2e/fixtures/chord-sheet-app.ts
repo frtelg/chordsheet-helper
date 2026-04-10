@@ -6,7 +6,7 @@ export class ChordSheetApp {
     // --- Locators ---
 
     get lyricsTextarea() {
-        return this.page.getByPlaceholder('Enter or paste song lyrics here');
+        return this.page.getByPlaceholder('Paste or type your song lyrics here…');
     }
 
     get modal() {
@@ -55,6 +55,10 @@ export class ChordSheetApp {
 
     get editLyricsCheckbox() {
         return this.page.locator('.HelpersBar input[type="checkbox"]');
+    }
+
+    get bracketedFormatToggle() {
+        return this.page.locator('.FormatToggle input[type="checkbox"]');
     }
 
     chordInputAt(index: number) {
