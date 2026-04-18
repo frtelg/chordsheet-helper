@@ -51,17 +51,31 @@ describe('formatBracketed', () => {
         });
     });
 
-    describe('instrumental lines (empty lyric)', () => {
-        it('chords on an empty lyric line are bracket-wrapped', () => {
-            expect(formatBracketed('G   D', '')).toBe('[G][D]');
+    describe('instrumental lines (empty lyric) — spacing preserved', () => {
+        it('chords on empty lyric preserve inter-token spacing', () => {
+            expect(formatBracketed('G   D', '')).toBe('[G]   [D]');
         });
 
-        it('optional chord on empty lyric becomes ([chord])', () => {
-            expect(formatBracketed('(Am)', '')).toBe('([Am])');
+        it('optional chord on empty lyric preserves spacing', () => {
+            expect(formatBracketed('(Am) G', '')).toBe('([Am]) [G]');
         });
 
-        it('bar separator on empty lyric is kept as-is', () => {
-            expect(formatBracketed('Am  |  G', '')).toBe('[Am]|[G]');
+        it('bar separator on empty lyric preserves surrounding spacing', () => {
+            expect(formatBracketed('Am  |  G', '')).toBe('[Am]  |  [G]');
+        });
+
+        it('bar-separated chord line preserves spacing', () => {
+            expect(formatBracketed('| G | D | Em | C |', '')).toBe('| [G] | [D] | [Em] | [C] |');
+        });
+
+        it('repeat-bar notation preserves spacing', () => {
+            expect(formatBracketed('|: G D :|', '')).toBe('|: [G] [D] :|');
+        });
+
+        it('rhythm slashes preserved without brackets', () => {
+            expect(formatBracketed('| G / / / | D / / / |', '')).toBe(
+                '| [G] / / / | [D] / / / |'
+            );
         });
     });
 });

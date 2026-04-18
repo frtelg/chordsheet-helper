@@ -41,3 +41,20 @@ export const TRANSPOSE_EXPECTED_KEY = 'C';
 export const UNDO_CHORDS = 'Am  F  C  G';
 export const UNDO_CHORDS_TRANSPOSED = 'A#m  F#  C#  G#';
 export const UNDO_EXPECTED_KEY = 'C';
+
+// Song with two instrumental bar lines followed by a normal verse.
+// The bar lines have no lyric below them — they should be classified as
+// instrumental rows (chord input only, no lyric input).
+export const SONG_WITH_INSTRUMENTAL = [
+    '| G | D | Em | C |',
+    '| G | D | Em | C |',
+    'G           D        Em     C',
+    'Amazing grace how sweet the sound',
+    'G           D        G',
+    'That saved a wretch like me',
+].join('\n');
+
+export const INSTRUMENTAL_CHORD_ROW = '| G | D | Em | C |';
+export const INSTRUMENTAL_BRACKETED_ROW = '| [G] | [D] | [Em] | [C] |';
+export const VERSE_CHORD_ROW_0 = 'G           D        Em     C';
+export const VERSE_LYRIC_ROW_0 = 'Amazing grace how sweet the sound';

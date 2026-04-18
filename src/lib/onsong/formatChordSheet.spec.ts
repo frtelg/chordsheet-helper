@@ -31,9 +31,9 @@ describe('formatChordSheet', () => {
             expect(result).toBe('Amazing grace');
         });
 
-        it('instrumental row emits bracketed chord tokens', () => {
+        it('instrumental row emits bracketed chord tokens with spacing preserved', () => {
             const result = formatChordSheet('bracketed', ['G   D'], ['']);
-            expect(result).toBe('[G][D]');
+            expect(result).toBe('[G]   [D]');
         });
     });
 
@@ -51,7 +51,7 @@ describe('formatChordSheet', () => {
             const chords = ['Am  G', 'Em  C', 'G'];
             const lyrics = ['', '', 'Amazing grace'];
             const result = formatChordSheet('bracketed', chords, lyrics);
-            expect(result).toBe('[Am][G]\n[Em][C]\n\n[G]Amazing grace');
+            expect(result).toBe('[Am]  [G]\n[Em]  [C]\n\n[G]Amazing grace');
         });
 
         it('single instrumental row between lyric sections — blank lines on both sides — bracketed', () => {
@@ -59,7 +59,7 @@ describe('formatChordSheet', () => {
             const lyrics = ['Amazing grace', 'how sweet the sound', '', 'that saved a wretch', 'like me'];
             const result = formatChordSheet('bracketed', chords, lyrics);
             expect(result).toBe(
-                '[G]Amazing grace\nhow sweet the sound\n\n[Am][D]\n\nthat saved a wretch\n[Em]like me',
+                '[G]Amazing grace\nhow sweet the sound\n\n[Am]  [D]\n\nthat saved a wretch\n[Em]like me',
             );
         });
 
@@ -72,7 +72,7 @@ describe('formatChordSheet', () => {
 
         it('trailing instrumental rows do not produce trailing blank lines', () => {
             const result = formatChordSheet('bracketed', ['Am  G'], ['']);
-            expect(result).toBe('[Am][G]');
+            expect(result).toBe('[Am]  [G]');
         });
     });
 });

@@ -52,6 +52,11 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
     const showSelect = isSelected || isHovering;
 
     const initialLyricValue = lyrics.split('\n')[index];
+    const chordValue = chordSheet[index] ?? '';
+    const lyricValue = initialLyricValue ?? '';
+    const isInstrumental =
+        lyricValue.trim() === '' &&
+        (/[|\[\]:()]/.test(chordValue) || /(?:^|\s)\/(?:\s|$)/.test(chordValue));
 
     return (
         <div
@@ -97,7 +102,7 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
                 </div>
             </div>
             <div className="LyricInputContainer">
-                {(initialLyricValue || '').trim() !== '' && (
+                {!isInstrumental && (
                     <Input
                         initialValue={initialLyricValue}
                         onBlur={onLyricInputBlur}
