@@ -6,32 +6,35 @@ const parseChordsAndSongText = (
     dispatchChords: (v: string[]) => void
 ) => {
     const inputLines = firstEntry.split('\n');
-    const songText = inputLines
-        .reduce((acc: string[], curr: string, i: number) => {
-            const previousLine = i === 0 ? undefined : inputLines[i - 1];
+    const chords: string[] = [];
+    const lyrics: string[] = [];
 
-            if (isChordsOnly(curr)) {
-                return isChordsOnly(previousLine ?? '') ? [...acc, ''] : acc;
+    let i = 0;
+    while (i < inputLines.length) {
+        const line = inputLines[i];
+
+        if (isChordsOnly(line)) {
+            const nextLine = inputLines[i + 1];
+            chords.push(line);
+
+            if (!nextLine || isChordsOnly(nextLine)) {
+                // Instrumental: chord row not immediately followed by a lyric
+                lyrics.push('');
+                i++;
+            } else {
+                // Normal: chord row immediately above a lyric line
+                lyrics.push(nextLine);
+                i += 2;
             }
-
-            return [...acc, curr];
-        }, [])
-        .join('\n');
-
-    dispatchSongText(songText);
-
-    const isNonChordsRow = (s: string) => !isChordsOnly(s);
-
-    const chords = inputLines.reduce((acc: string[], curr: string, i: number) => {
-        const previousLine = i === 0 ? undefined : inputLines[i - 1];
-
-        if (isNonChordsRow(curr)) {
-            return isNonChordsRow(previousLine ?? '') ? [...acc, ''] : acc;
+        } else {
+            // Pure lyric line with no chord directly above it
+            chords.push('');
+            lyrics.push(line);
+            i++;
         }
+    }
 
-        return [...acc, curr];
-    }, []);
-
+    dispatchSongText(lyrics.join('\n'));
     dispatchChords(chords);
 };
 

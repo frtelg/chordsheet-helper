@@ -1,8 +1,9 @@
-const BAR_SEPARATORS = new Set(['|', '||', '||:', ':||']);
+const BAR_SEPARATORS = new Set(['|', '||', '||:', ':||', '|:', ':|', '/']);
 
 type Token = {
     offset: number;
-    formatted: string; // what to insert into the lyric
+    raw: string;
+    formatted: string;
 };
 
 function isBarSeparator(text: string): boolean {
@@ -15,7 +16,7 @@ function isOptionalChord(text: string): boolean {
 
 /**
  * Scan a chord line left-to-right and return an ordered list of tokens
- * with their column offset and formatted output string.
+ * with their column offset, raw source text, and formatted output string.
  */
 function tokenize(chordLine: string): Token[] {
     const tokens: Token[] = [];
@@ -46,7 +47,7 @@ function tokenize(chordLine: string): Token[] {
             formatted = `[${raw}]`;
         }
 
-        tokens.push({ offset, formatted });
+        tokens.push({ offset, raw, formatted });
         i = j;
     }
 
@@ -60,10 +61,10 @@ function tokenize(chordLine: string): Token[] {
  * character offset (original lyric coordinates):
  * - Regular chords become [chord]
  * - Optional chords (Am) become ([Am])
- * - Bar separators (|, ||, ||:, :||) are inserted without brackets
+ * - Bar separators (|, ||, ||:, :||, |:, :|, /) are inserted without brackets
  *
  * If the lyric is shorter than a token's offset it is padded with spaces.
- * If the lyric is empty all tokens are concatenated directly (instrumental line).
+ * If the lyric is empty, inter-token whitespace from the chord line is preserved verbatim.
  */
 export function formatBracketed(chordLine: string, lyricLine: string): string {
     const tokens = tokenize(chordLine);
@@ -72,9 +73,17 @@ export function formatBracketed(chordLine: string, lyricLine: string): string {
         return lyricLine;
     }
 
-    // Instrumental line: no lyric to align with — just concatenate formatted tokens
+    // Instrumental line: no lyric to align with — walk the source chord line,
+    // preserving whitespace between tokens verbatim.
     if (lyricLine.trim() === '') {
-        return tokens.map((t) => t.formatted).join('');
+        let result = '';
+        let pos = 0;
+        for (const token of tokens) {
+            result += chordLine.slice(pos, token.offset);
+            result += token.formatted;
+            pos = token.offset + token.raw.length;
+        }
+        return result;
     }
 
     let result = '';
