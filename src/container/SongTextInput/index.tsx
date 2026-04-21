@@ -11,12 +11,15 @@ type Format = 'bracketed' | 'over-lyrics';
 /** Render the canonical bracketed string as chords-over-lyrics for the textarea. */
 function renderOverLyrics(rows: ReturnType<typeof selectRows>): string {
     const lines: string[] = [];
-    for (const row of rows) {
+    for (let idx = 0; idx < rows.length; idx++) {
+        const row = rows[idx];
+        if (row.precededByBlank && idx > 0) {
+            lines.push('');
+        }
         if (row.isInstrumental && !row.chord) {
             lines.push('');
         } else if (row.isInstrumental) {
             lines.push(row.chord);
-            lines.push('');
         } else if (row.chord) {
             lines.push(row.chord);
             lines.push(row.lyric);

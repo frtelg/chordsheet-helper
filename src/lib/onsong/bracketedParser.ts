@@ -5,6 +5,7 @@ export interface Row {
     lyric: string;
     isInstrumental: boolean;
     sourceLineIndex: number;
+    precededByBlank: boolean;
 }
 
 /**
@@ -99,6 +100,7 @@ export function parseCanonical(value: string): Row[] {
 
     const rows: Row[] = [];
     let i = 0;
+    let pendingBlank = false;
 
     while (i < lines.length) {
         if (tags[i] === 'chord-only') {
@@ -107,7 +109,9 @@ export function parseCanonical(value: string): Row[] {
                 lyric: '',
                 isInstrumental: true,
                 sourceLineIndex: i,
+                precededByBlank: pendingBlank,
             });
+            pendingBlank = false;
             i++;
         } else if (tags[i] === 'empty') {
             const runStart = i;
@@ -120,13 +124,21 @@ export function parseCanonical(value: string): Row[] {
             const adjacentToChordOnly = prevTag === 'chord-only' || nextTag === 'chord-only';
             const rests = adjacentToChordOnly ? Math.max(0, N - 1) : Math.max(0, N - 2);
             const firstRestIndex = runStart + 1;
-            for (let r = 0; r < rests; r++) {
-                rows.push({
-                    chord: '',
-                    lyric: '',
-                    isInstrumental: true,
-                    sourceLineIndex: firstRestIndex + r,
-                });
+            if (rests > 0) {
+                for (let r = 0; r < rests; r++) {
+                    rows.push({
+                        chord: '',
+                        lyric: '',
+                        isInstrumental: true,
+                        sourceLineIndex: firstRestIndex + r,
+                        precededByBlank: false,
+                    });
+                }
+                pendingBlank = false;
+            } else if (N > 0) {
+                // All blanks were consumed as separators, but there was at least one blank.
+                // Flag the next row so renderOverLyrics can emit the visual separator.
+                pendingBlank = true;
             }
         } else {
             const { chord, lyric } = parseBracketedLine(lines[i]);
@@ -135,7 +147,9 @@ export function parseCanonical(value: string): Row[] {
                 lyric,
                 isInstrumental: false,
                 sourceLineIndex: i,
+                precededByBlank: pendingBlank,
             });
+            pendingBlank = false;
             i++;
         }
     }

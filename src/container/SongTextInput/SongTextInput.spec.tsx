@@ -74,6 +74,36 @@ describe('SongTextInput', () => {
         });
     });
 
+    describe('renderOverLyrics', () => {
+        it('consecutive instrumental rows render without blank between them', () => {
+            const store = makeStore('| [G] | [D] |\n| [C] | [F] |');
+            renderInput(store);
+            fireEvent.click(screen.getByRole('button', { name: 'Chords over lyrics' }));
+            expect(getTextarea().value).toBe('| G | D |\n| C | F |');
+        });
+
+        it('blank line before instrumental is preserved', () => {
+            const store = makeStore('Key: Em\n\n| [G] | [D] |');
+            renderInput(store);
+            fireEvent.click(screen.getByRole('button', { name: 'Chords over lyrics' }));
+            expect(getTextarea().value).toBe('Key: Em\n\n| G | D |');
+        });
+
+        it('blank between lyric rows is preserved', () => {
+            const store = makeStore('[Am]Amazing grace\n\n[G]How sweet the sound');
+            renderInput(store);
+            fireEvent.click(screen.getByRole('button', { name: 'Chords over lyrics' }));
+            expect(getTextarea().value).toBe('Am\nAmazing grace\n\nG\nHow sweet the sound');
+        });
+
+        it('blank between instrumental and following lyric is preserved', () => {
+            const store = makeStore('| [G] | [D] |\n\nVerse 1:\n[Am]Amazing grace');
+            renderInput(store);
+            fireEvent.click(screen.getByRole('button', { name: 'Chords over lyrics' }));
+            expect(getTextarea().value).toBe('| G | D |\n\nVerse 1:\nAm\nAmazing grace');
+        });
+    });
+
     describe('format toggle', () => {
         it('renders Bracketed and Chords over lyrics buttons', () => {
             renderInput();

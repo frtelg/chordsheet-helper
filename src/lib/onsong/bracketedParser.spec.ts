@@ -195,6 +195,46 @@ describe('parseCanonical', () => {
         });
     });
 
+    describe('precededByBlank', () => {
+        it('first row is never preceded by a blank', () => {
+            const rows = parseCanonical('| G | D |');
+            expect(rows[0].precededByBlank).toBe(false);
+        });
+
+        it('instrumental row after a single blank gets precededByBlank=true', () => {
+            const rows = parseCanonical('Key: Em\n\n| G | D |');
+            expect(rows).toHaveLength(2);
+            expect(rows[1].precededByBlank).toBe(true);
+        });
+
+        it('consecutive instrumentals have precededByBlank=false', () => {
+            const rows = parseCanonical('| G | D |\n| C | F |');
+            expect(rows).toHaveLength(2);
+            expect(rows[0].precededByBlank).toBe(false);
+            expect(rows[1].precededByBlank).toBe(false);
+        });
+
+        it('lyric row after a single blank between lyrics gets precededByBlank=true', () => {
+            const rows = parseCanonical('[Am]verse\n\n[G]verse two');
+            expect(rows).toHaveLength(2);
+            expect(rows[1].precededByBlank).toBe(true);
+        });
+
+        it('lyric row after instrumental + single blank gets precededByBlank=true', () => {
+            const rows = parseCanonical('| G | D |\n\nVerse 1:');
+            expect(rows).toHaveLength(2);
+            expect(rows[1].precededByBlank).toBe(true);
+        });
+
+        it('rest rows (empty instrumental) have precededByBlank=false', () => {
+            const rows = parseCanonical('lyric\n\n\n\nlyric2');
+            const rest = rows[1];
+            expect(rest.isInstrumental).toBe(true);
+            expect(rest.chord).toBe('');
+            expect(rest.precededByBlank).toBe(false);
+        });
+    });
+
     describe('sourceLineIndex correctness', () => {
         it('lyric rows track their line index', () => {
             const rows = parseCanonical('[Am]love\n\n\n\n[G]me');
