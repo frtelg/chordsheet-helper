@@ -69,6 +69,24 @@ describe('isChordsOnly', () => {
         });
     });
 
+    describe('chords with parenthetical interval qualifiers', () => {
+        it('returns true for chord line with flat-five qualifier', () => {
+            expect(isChordsOnly('Bm7(b5) E7(b9)')).toBeTruthy();
+        });
+
+        it('returns true for bar notation with complex chords', () => {
+            expect(isChordsOnly('| Bm7(b5) E7(b9)/G# | Am2 | Am2/G |')).toBeTruthy();
+        });
+
+        it('returns true for sharp-eleven qualifier', () => {
+            expect(isChordsOnly('Fmaj7(#11) G')).toBeTruthy();
+        });
+
+        it('returns true for bracketed complex chords', () => {
+            expect(isChordsOnly('| [C] | [Bm7(b5)] [E7(b9)/G#] | [Am2] | [Am2/G] |')).toBeTruthy();
+        });
+    });
+
     describe('boundary cases', () => {
         it('returns false for empty string', () => {
             expect(isChordsOnly('')).toBeFalsy();

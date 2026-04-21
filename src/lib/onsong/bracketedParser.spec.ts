@@ -96,6 +96,14 @@ describe('parseCanonical', () => {
             expect(rows[0].chord).toBe('| G | D |');
             expect(rows[0].isInstrumental).toBe(true);
         });
+
+        it('bar-notation line with complex chord names (parenthetical qualifiers)', () => {
+            const line = '| [C]     | [Bm7(b5)] [E7(b9)/G#] | [Am2]      | [Am2/G] |';
+            const rows = parseCanonical(line);
+            expect(rows).toHaveLength(1);
+            expect(rows[0].isInstrumental).toBe(true);
+            expect(rows[0].chord).toBe('| C     | Bm7(b5) E7(b9)/G# | Am2      | Am2/G |');
+        });
     });
 
     describe('Rule B — empty-line silent rests', () => {
