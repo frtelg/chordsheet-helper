@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { transposeAll } from '@/redux/reducer/ChordSheetReducer';
+import { transposeAll } from '@/redux/reducer/CanonicalReducer';
 import { mdiArrowUpBold, mdiArrowDownBold } from '@mdi/js';
 import ClickableIcon from '@/components/ClickableIcon';
 
@@ -8,7 +8,7 @@ const Transposer: FunctionComponent = () => {
     const dispatch = useDispatch();
     const transposeUp = () => dispatch(transposeAll(1));
     const transposeDown = () => dispatch(transposeAll(-1));
-    const { key } = useSelector((s: ReduxState) => s.chordSheet);
+    const key = useSelector((s: RootState) => s.canonical.key);
 
     return (
         <div className="Transposer">

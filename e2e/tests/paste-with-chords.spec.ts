@@ -29,17 +29,17 @@ test.describe('Paste lyrics containing chord lines', () => {
         await expect(app.keyDisplay).toContainText(`Key: ${EXPECTED_KEY_AFTER_EXTRACTION}`);
     });
 
-    test('declines extraction: raw text stays in textarea, chord inputs are empty', async ({
+    test('declines extraction: raw text stays in textarea', async ({
         app,
     }) => {
         await app.pasteLyricsWithModal(SONG_WITH_CHORDS);
         await app.declineChordExtraction();
 
+        // Declining keeps the raw chords-over-lyrics text in the textarea.
         await expect(app.lyricsTextarea).toHaveValue(SONG_WITH_CHORDS);
 
-        const chordInputCount = await app.page.locator('.ChordInput').count();
-        for (let i = 0; i < chordInputCount; i++) {
-            await expect(app.chordInputAt(i)).toHaveValue('');
-        }
+        // In the new canonical model, chord-only lines are still recognised as
+        // instrumental rows — so chord inputs are populated (not empty).
+        await expect(app.chordInputAt(0)).toHaveValue(EXTRACTED_CHORD_ROW_0);
     });
 });

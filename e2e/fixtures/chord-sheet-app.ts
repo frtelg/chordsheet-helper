@@ -57,8 +57,24 @@ export class ChordSheetApp {
         return this.page.locator('.HelpersBar input[type="checkbox"]');
     }
 
+    /** Result-view format toggle (checkbox in ChordSheetResult). */
     get bracketedFormatToggle() {
         return this.page.locator('.FormatToggle input[type="checkbox"]');
+    }
+
+    /** Editor-side "Bracketed" format button in SongTextInput toolbar. */
+    get editorBracketedButton() {
+        return this.page.getByRole('button', { name: 'Bracketed', exact: true });
+    }
+
+    /** Editor-side "Chords over lyrics" format button in SongTextInput toolbar. */
+    get editorOverLyricsButton() {
+        return this.page.getByRole('button', { name: 'Chords over lyrics', exact: true });
+    }
+
+    /** The bracket-warning message shown when a bare `[` is typed in the lyrics textarea. */
+    get bracketWarning() {
+        return this.page.locator('.SongTextInputWarning');
     }
 
     chordInputAt(index: number) {

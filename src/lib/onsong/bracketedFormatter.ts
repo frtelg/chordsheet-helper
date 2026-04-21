@@ -1,3 +1,5 @@
+import isChordsOnly from '@/lib/chord/isChordsOnly';
+
 const BAR_SEPARATORS = new Set(['|', '||', '||:', ':||', '|:', ':|', '/']);
 
 type Token = {
@@ -52,6 +54,53 @@ function tokenize(chordLine: string): Token[] {
     }
 
     return tokens;
+}
+
+/**
+ * Emit a single canonical bracketed line from chord and lyric strings.
+ * Delegates to formatBracketed; exposed separately for clarity at call sites.
+ */
+export function formatBracketedLine(chord: string, lyric: string): string {
+    return formatBracketed(chord, lyric);
+}
+
+/**
+ * Convert chords-over-lyrics input to a canonical bracketed OnSong string.
+ * Pairs each isChordsOnly line with the following lyric line (if any);
+ * consecutive chord-only lines or chord-only lines without a following lyric
+ * are treated as instrumental rows.
+ */
+export function chordsOverLyricsToBracketed(input: string): string {
+    const inputLines = input.split('\n');
+    const outputLines: string[] = [];
+    let i = 0;
+
+    while (i < inputLines.length) {
+        const line = inputLines[i];
+        if (isChordsOnly(line)) {
+            // Strip existing bracket notation before re-formatting to avoid double-bracketing.
+            const rawChord = line
+                .replace(/\(\[([^\]]+)\]\)/g, '($1)')
+                .replace(/\[([^\]]+)\]/g, '$1');
+            const nextLine = inputLines[i + 1];
+            if (!nextLine || isChordsOnly(nextLine)) {
+                outputLines.push(formatBracketed(rawChord, ''));
+                i++;
+            } else if (rawChord.includes('|')) {
+                // Bar-notation chord line: format instrumentally, concatenate lyric verbatim
+                outputLines.push(formatBracketed(rawChord, '') + nextLine);
+                i += 2;
+            } else {
+                outputLines.push(formatBracketed(rawChord, nextLine));
+                i += 2;
+            }
+        } else {
+            outputLines.push(line);
+            i++;
+        }
+    }
+
+    return outputLines.join('\n');
 }
 
 /**

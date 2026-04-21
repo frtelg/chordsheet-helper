@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import DownloadTextAsFileLink from '@/components/DownloadTextAsFileLink';
 import { toggleShowResult, setOnsongFormat } from '@/redux/reducer/AppReducer';
 import { formatChordSheet } from '@/lib/onsong/formatChordSheet';
+import { selectRows } from '@/redux/selectors/canonicalRows';
 
 type ChordSheetLine = {
     text: string;
@@ -10,41 +11,38 @@ type ChordSheetLine = {
 };
 
 const ChordSheetResult = () => {
-    const songText = useSelector((state: RootState) => state.songText.value);
-    const { value: chords, key } = useSelector((state: RootState) => state.chordSheet);
+    const canonical = useSelector((state: RootState) => state.canonical.value);
+    const key = useSelector((state: RootState) => state.canonical.key);
+    const rows = useSelector(selectRows);
     const onsongFormat = useSelector((state: RootState) => state.app.onsongFormat);
-
     const dispatch = useDispatch();
 
-    const doToggleEditMode = () => {
-        dispatch(toggleShowResult());
-    };
+    const doToggleEditMode = () => dispatch(toggleShowResult());
 
     const onFormatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         dispatch(setOnsongFormat(e.target.checked ? 'bracketed' : 'chords-over-lyrics'));
     };
 
-    const songLines = songText.split('\n');
-    const chordLines = songLines.map((_: string, i: number) => `${chords[i] || ''}`);
+    const chords = rows.map((r) => r.chord);
+    const songLines = rows.map((r) => r.lyric);
 
-    // Download text — always built from the full row set so blank-line logic is correct
-    const downloadText = formatChordSheet(onsongFormat, chordLines, songLines);
+    const downloadText =
+        onsongFormat === 'bracketed'
+            ? canonical
+            : formatChordSheet('chords-over-lyrics', chords, songLines);
 
-    // Preview list — bracketed reuses downloadText (already multi-row aware).
-    // chords-over-lyrics rebuilds with typed entries using the same blank-line logic
-    // as formatChordSheet so the preview matches the download exactly.
     let chordSheetList: ChordSheetLine[];
 
     if (onsongFormat === 'bracketed') {
-        chordSheetList = downloadText
+        chordSheetList = canonical
             .split('\n')
             .map((line) => ({ text: line, lineType: 'text' as const }));
     } else {
         const list: ChordSheetLine[] = [];
         let prevInstrumental = false;
 
-        for (let i = 0; i < songLines.length; i++) {
-            const chordLine = chordLines[i];
+        for (let i = 0; i < rows.length; i++) {
+            const chordLine = chords[i];
             const lyricLine = songLines[i];
             const hasChords = chordLine.trim() !== '';
             const instrumental = hasChords && lyricLine.trim() === '';
@@ -75,8 +73,10 @@ const ChordSheetResult = () => {
         chordSheetList = list;
     }
 
-    const getTextFileName = () =>
-        `${songText.split('\n').filter((l: string) => l.trim() !== '')[0]}.txt`;
+    const getTextFileName = () => {
+        const firstLyric = rows.find((r) => r.lyric.trim() !== '')?.lyric ?? 'chordsheet';
+        return `${firstLyric}.txt`;
+    };
 
     return (
         <div className="ChordSheetResult">

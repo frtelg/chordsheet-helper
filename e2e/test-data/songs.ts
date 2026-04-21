@@ -32,14 +32,18 @@ export const SINGLE_LINE_LYRICS = 'Amazing grace how sweet the sound';
 // After transposing up 1 semitone the key becomes Db (which uses sharps),
 // so the app converts Db/Gb/Ab → C#/F#/G#.
 export const TRANSPOSE_CHORDS = 'C  F  G';
-export const TRANSPOSE_CHORDS_UP_1 = 'C#  F#  G#';
+// In the canonical model, chord positions are preserved in lyric coordinates.
+// After transposing C→C#, F→F#, G→G#, the 2-char chords at positions 0/3/6
+// leave 1 space gap instead of 2 (chord width grew by 1).
+export const TRANSPOSE_CHORDS_UP_1 = 'C# F# G#';
 export const TRANSPOSE_EXPECTED_KEY = 'C';
 
 // Chords for undo test: Am  F  C  G → C major.
 // After transposing up 1 the key becomes Db (uses sharps),
 // so Bbm/Gb/Db/Ab → A#m/F#/C#/G#.
 export const UNDO_CHORDS = 'Am  F  C  G';
-export const UNDO_CHORDS_TRANSPOSED = 'A#m  F#  C#  G#';
+// After transposing Am→A#m, F→F#, C→C#, G→G#, same reason as TRANSPOSE_CHORDS_UP_1.
+export const UNDO_CHORDS_TRANSPOSED = 'A#m F# C# G#';
 export const UNDO_EXPECTED_KEY = 'C';
 
 // Song with two instrumental bar lines followed by a normal verse.
