@@ -72,11 +72,6 @@ export class ChordSheetApp {
         return this.page.getByRole('button', { name: 'Chords over lyrics', exact: true });
     }
 
-    /** The bracket-warning message shown when a bare `[` is typed in the lyrics textarea. */
-    get bracketWarning() {
-        return this.page.locator('.SongTextInputWarning');
-    }
-
     chordInputAt(index: number) {
         return this.page.locator('.ChordInput').nth(index);
     }

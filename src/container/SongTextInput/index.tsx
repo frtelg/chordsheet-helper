@@ -30,25 +30,6 @@ function renderOverLyrics(rows: ReturnType<typeof selectRows>): string {
     return lines.join('\n');
 }
 
-/** Check if input introduces a bare '[' that is not part of a valid [chord] token. */
-function hasBareOpenBracket(value: string): boolean {
-    const lines = value.split('\n');
-    for (const line of lines) {
-        if (isChordsOnly(line)) continue;
-        let i = 0;
-        while (i < line.length) {
-            if (line[i] === '[') {
-                const end = line.indexOf(']', i);
-                if (end === -1) return true;
-                i = end + 1;
-            } else {
-                i++;
-            }
-        }
-    }
-    return false;
-}
-
 const doesInputHaveChordLines = (v: string) => !!v.split('\n').find((line) => isChordsOnly(line));
 
 const doesInputHaveMultipleLines = (v: string) => v.split('\n').length > 1;
@@ -58,7 +39,6 @@ const SongTextInput: FunctionComponent = () => {
     const [showModal, setShowModal] = useState(false);
     const [firstEntry, setFirstEntry] = useState('');
     const [format, setFormat] = useState<Format>('bracketed');
-    const [bracketWarning, setBracketWarning] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const lastCursorRef = useRef<{ start: number; end: number } | null>(null);
@@ -90,7 +70,6 @@ const SongTextInput: FunctionComponent = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const raw = e.target.value;
-        setBracketWarning(false);
 
         if (raw === '') {
             setTouched(false);
@@ -110,11 +89,6 @@ const SongTextInput: FunctionComponent = () => {
 
         if (format === 'over-lyrics') {
             dispatchCanonical(chordsOverLyricsToBracketed(raw));
-            return;
-        }
-
-        if (hasBareOpenBracket(raw)) {
-            setBracketWarning(true);
             return;
         }
 
@@ -139,7 +113,6 @@ const SongTextInput: FunctionComponent = () => {
     const handleReset = () => {
         dispatch(resetCanonical());
         setTouched(false);
-        setBracketWarning(false);
     };
 
     return (
@@ -175,12 +148,6 @@ const SongTextInput: FunctionComponent = () => {
                     Chords over lyrics
                 </button>
             </div>
-            {bracketWarning && (
-                <p className="SongTextInputWarning">
-                    Literal <code>[</code> is not allowed in lyrics. Use <code>[Am]</code> format
-                    for chords.
-                </p>
-            )}
             <textarea
                 id="song-text-input"
                 ref={textareaRef}

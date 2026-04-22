@@ -50,17 +50,13 @@ test.describe('Bidirectional sync', () => {
         expect(value).toContain('[C#]');
     });
 
-    test('typing a bare [ in bracketed mode shows warning and rejects edit', async ({ app }) => {
+    test('typing a bare [ in bracketed mode is accepted as lyric text', async ({ app }) => {
         await app.pasteLyricsViaButton(SINGLE_LINE_LYRICS);
 
-        // Type a bare [ in the textarea
         await app.lyricsTextarea.fill('love [me');
 
-        // Warning should appear
-        await expect(app.bracketWarning).toBeVisible();
-
-        // The textarea value should NOT have been updated (edit rejected)
+        // Bare [ is now treated as plain lyric text; value is retained verbatim.
         const value = await app.lyricsTextarea.inputValue();
-        expect(value).not.toContain('love [me');
+        expect(value).toBe('love [me');
     });
 });

@@ -49,28 +49,26 @@ describe('SongTextInput', () => {
         });
     });
 
-    describe('bare bracket guard', () => {
-        it('bare [ without closing ] shows warning', () => {
-            renderInput();
-            expect(screen.queryByText(/Literal/)).toBeNull();
-            fireEvent.change(getTextarea(), { target: { value: 'love [me' } });
-            expect(screen.getByText(/Literal/)).toBeInTheDocument();
-        });
-
-        it('bare [ edit does not update canonical', () => {
+    describe('bare bracket passthrough', () => {
+        it('backspace deleting "]" of [Am] leaves "[Am" in canonical', () => {
             const store = makeStore('[Am]Amazing grace');
             renderInput(store);
-            fireEvent.change(getTextarea(), { target: { value: '[Am]Amazing [grace' } });
-            // Value should NOT change
-            expect(store.getState().canonical.value).toBe('[Am]Amazing grace');
+            fireEvent.change(getTextarea(), { target: { value: '[AmAmazing grace' } });
+            expect(store.getState().canonical.value).toBe('[AmAmazing grace');
         });
 
-        it('warning clears on next valid edit', () => {
-            renderInput();
+        it('forward-delete of "[" of [Am] leaves "Am]" in canonical', () => {
+            const store = makeStore('[Am]Amazing grace');
+            renderInput(store);
+            fireEvent.change(getTextarea(), { target: { value: 'Am]Amazing grace' } });
+            expect(store.getState().canonical.value).toBe('Am]Amazing grace');
+        });
+
+        it('typing literal "[" is accepted as lyric', () => {
+            const store = makeStore('love me');
+            renderInput(store);
             fireEvent.change(getTextarea(), { target: { value: 'love [me' } });
-            expect(screen.getByText(/Literal/)).toBeInTheDocument();
-            fireEvent.change(getTextarea(), { target: { value: 'love me' } });
-            expect(screen.queryByText(/Literal/)).toBeNull();
+            expect(store.getState().canonical.value).toBe('love [me');
         });
     });
 
