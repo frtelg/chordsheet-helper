@@ -134,8 +134,8 @@ describe('chordsOverLyricsToBracketed', () => {
         expect(chordsOverLyricsToBracketed('G D\n\nlove me')).toBe('[G] [D]\n\nlove me');
     });
 
-    it('handles bar notation instrumental', () => {
-        expect(chordsOverLyricsToBracketed('| G | D |\nlove me')).toBe('| [G] | [D] |love me');
+    it('handles bar notation instrumental — following lyric stays on its own line', () => {
+        expect(chordsOverLyricsToBracketed('| G | D |\nlove me')).toBe('| [G] | [D] |\nlove me');
     });
 
     it('already-bracketed chord-only line round-trips unchanged', () => {

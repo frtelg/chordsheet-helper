@@ -87,9 +87,9 @@ export function chordsOverLyricsToBracketed(input: string): string {
                 outputLines.push(formatBracketed(rawChord, ''));
                 i++;
             } else if (rawChord.includes('|')) {
-                // Bar-notation chord line: format instrumentally, concatenate lyric verbatim
-                outputLines.push(formatBracketed(rawChord, '') + nextLine);
-                i += 2;
+                // Bar-notation chord line: always instrumental — following line stays separate
+                outputLines.push(formatBracketed(rawChord, ''));
+                i++;
             } else {
                 outputLines.push(formatBracketed(rawChord, nextLine));
                 i += 2;

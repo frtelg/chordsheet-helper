@@ -42,6 +42,7 @@ const SongTextInput: FunctionComponent = () => {
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const lastCursorRef = useRef<{ start: number; end: number } | null>(null);
+    const pendingCursorRef = useRef<number | null>(null);
 
     const canonical = useSelector((state: RootState) => state.canonical.value);
     const rows = useSelector(selectRows);
@@ -49,10 +50,19 @@ const SongTextInput: FunctionComponent = () => {
 
     const displayValue = format === 'bracketed' ? canonical : renderOverLyrics(rows);
 
-    // Cursor preservation: restore cursor when value changed externally (right-side edit)
+    // Cursor preservation: restore cursor when value changed externally (right-side edit),
+    // or when a pending cursor was saved from an Enter keypress in over-lyrics mode.
     useLayoutEffect(() => {
         const el = textareaRef.current;
-        if (!el || document.activeElement === el || !lastCursorRef.current) return;
+        if (!el) return;
+        const pendingCursor = pendingCursorRef.current;
+        pendingCursorRef.current = null;
+        if (pendingCursor !== null) {
+            const pos = Math.min(pendingCursor, el.value.length);
+            el.setSelectionRange(pos, pos);
+            return;
+        }
+        if (document.activeElement === el || !lastCursorRef.current) return;
         const { start, end } = lastCursorRef.current;
         const max = el.value.length;
         el.setSelectionRange(Math.min(start, max), Math.min(end, max));
@@ -95,7 +105,7 @@ const SongTextInput: FunctionComponent = () => {
         dispatchCanonical(raw);
     };
 
-    const handleTab = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Tab') {
             e.preventDefault();
             const el = e.currentTarget;
@@ -107,6 +117,12 @@ const SongTextInput: FunctionComponent = () => {
             } else {
                 dispatchCanonical(padded);
             }
+        }
+
+        if (e.key === 'Enter' && format === 'over-lyrics') {
+            // Save cursor position so useLayoutEffect can restore it after the round-trip
+            // re-renders the same displayValue (swallowing the inserted blank line).
+            pendingCursorRef.current = e.currentTarget.selectionStart + 1;
         }
     };
 
@@ -153,7 +169,7 @@ const SongTextInput: FunctionComponent = () => {
                 ref={textareaRef}
                 value={displayValue}
                 onChange={handleChange}
-                onKeyDown={handleTab}
+                onKeyDown={handleKeyDown}
                 onSelect={trackCursor}
                 onKeyUp={trackCursor}
                 placeholder="Paste or type your song lyrics here…"
