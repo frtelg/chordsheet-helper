@@ -24,7 +24,14 @@ Run a single test file:
 yarn test src/lib/chord/parseChord.spec.ts
 ```
 
-Node version: 24 (see `.nvmrc`). Pre-commit hooks run gitleaks (secrets scan) and lint-staged (ESLint + Prettier) via Husky.
+## Node version
+
+**Always use Node 24** (see `.nvmrc`). If running commands in a shell that defaults to a different Node version, use nvm to switch:
+```bash
+. ~/.nvm/nvm.sh && nvm use 24
+```
+
+This ensures pre-commit hooks (gitleaks, lint-staged), `yarn` commands, and `openspec` CLI all run under the correct Node version. Mismatched versions cause hook failures and linting errors.
 
 ## Quality gate — run before every commit
 
