@@ -1,26 +1,25 @@
 ## MODIFIED Requirements
 
-### Requirement: Bracketed formatter converts (chordLine, lyricLine) to a single inline string
-The bracketed formatter SHALL, when the lyric line is empty or whitespace-only, preserve the original chord line's inter-token whitespace in the output. Each chord token is wrapped in `[…]`, optional chords become `([chord])`, and bar separators (`|`, `||`, `||:`, `:||`) are emitted verbatim. The whitespace between tokens in the source chord line SHALL be copied verbatim into the output.
+### Requirement: Bracketed OnSong is the canonical editor storage format
 
-The non-instrumental branch (lyric present) is unchanged — tokens are still inserted into the lyric at their character offsets.
+The bracketed OnSong format SHALL serve as the canonical Redux storage format for the chord sheet, not only as an export format. The formatter SHALL expose `formatBracketedLine(chord: string, lyric: string) => string` for single-line emission used by right-side row edits, in addition to the existing whole-sheet `formatBracketed`.
 
-#### Scenario: Bar-separated instrumental line preserves spacing
-- **WHEN** `chordLine` is `"| G | D | Em | C |"` and `lyricLine` is empty
-- **THEN** the result is `"| [G] | [D] | [Em] | [C] |"`
+#### Scenario: Single-line emission for a paired row
+- **WHEN** `formatBracketedLine('Am', 'love')` is called
+- **THEN** the output is `"[Am]love"`
 
-#### Scenario: Repeat-bar instrumental line
-- **WHEN** `chordLine` is `"|: G D :|"` and `lyricLine` is empty
-- **THEN** the result is `"|: [G] [D] :|"`
+#### Scenario: Single-line emission for an instrumental row
+- **WHEN** `formatBracketedLine('| G | D |', '')` is called
+- **THEN** the output preserves the instrumental spacing, e.g. `"| [G] | [D] |"`
 
-#### Scenario: Rhythm-slash instrumental line
-- **WHEN** `chordLine` is `"| G / / / | D / / / |"` and `lyricLine` is empty
-- **THEN** the result is `"| [G] / / / | [D] / / / |"`
+#### Scenario: Single-line emission for a pure lyric row
+- **WHEN** `formatBracketedLine('', 'love me')` is called
+- **THEN** the output is `"love me"`
 
-#### Scenario: Simple multi-chord instrumental line (existing behaviour)
-- **WHEN** `chordLine` is `"G   D"` and `lyricLine` is empty
-- **THEN** the result is `"[G]   [D]"` (whitespace preserved, each chord bracketed)
+### Requirement: Idempotent round-trip with the bracketed parser
 
-#### Scenario: Optional chord in instrumental line
-- **WHEN** `chordLine` is `"(Am) G"` and `lyricLine` is empty
-- **THEN** the result is `"([Am]) [G]"`
+The bracketed parser and the bracketed formatter SHALL be a round-trip pair. For every canonical string `s` accepted by the parser, `formatBracketed(parseCanonical(s)) === s`.
+
+#### Scenario: Parse-format round-trip
+- **WHEN** a corpus of accepted canonical strings is fed through `formatBracketed(parseCanonical(s))`
+- **THEN** the result equals the original `s` for every input
