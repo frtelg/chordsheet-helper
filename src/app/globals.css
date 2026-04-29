@@ -412,7 +412,6 @@ button.btn-danger:hover {
   font-family: var(--font-ui);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--color-text-muted);
   padding: var(--space-1) var(--space-3);
