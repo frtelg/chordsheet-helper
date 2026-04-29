@@ -69,6 +69,62 @@ describe('isChordsOnly', () => {
         });
     });
 
+    describe('chords with parenthetical interval qualifiers', () => {
+        it('returns true for chord line with flat-five qualifier', () => {
+            expect(isChordsOnly('Bm7(b5) E7(b9)')).toBeTruthy();
+        });
+
+        it('returns true for bar notation with complex chords', () => {
+            expect(isChordsOnly('| Bm7(b5) E7(b9)/G# | Am2 | Am2/G |')).toBeTruthy();
+        });
+
+        it('returns true for sharp-eleven qualifier', () => {
+            expect(isChordsOnly('Fmaj7(#11) G')).toBeTruthy();
+        });
+
+        it('returns true for bracketed complex chords', () => {
+            expect(isChordsOnly('| [C] | [Bm7(b5)] [E7(b9)/G#] | [Am2] | [Am2/G] |')).toBeTruthy();
+        });
+    });
+
+    describe('sharp/flat compound chords', () => {
+        it('returns true for sharp-minor with seventh', () => {
+            expect(isChordsOnly('F#m7')).toBeTruthy();
+        });
+
+        it('returns true for sharp-minor without extension', () => {
+            expect(isChordsOnly('F#m')).toBeTruthy();
+        });
+
+        it('returns true for chord line with sharp-minor token', () => {
+            expect(isChordsOnly('       Amaj9                       F#m7')).toBeTruthy();
+        });
+
+        it('returns true for line mixing major, maj7 and sharp-minor', () => {
+            expect(isChordsOnly('E           Amaj7     F#m7')).toBeTruthy();
+        });
+
+        it('returns true for slash chord with sharp bass', () => {
+            expect(isChordsOnly('Amaj7       E/G#       F#m7         E/G#')).toBeTruthy();
+        });
+
+        it('returns true for ascii-flat minor with seventh', () => {
+            expect(isChordsOnly('Bbm7')).toBeTruthy();
+        });
+
+        it('returns true for unicode-flat minor with seventh', () => {
+            expect(isChordsOnly('B♭m7')).toBeTruthy();
+        });
+
+        it('returns true for chord line with unicode-flat minor token', () => {
+            expect(isChordsOnly('       A♭maj9                       B♭m7')).toBeTruthy();
+        });
+
+        it('returns true for slash chord with unicode-flat bass', () => {
+            expect(isChordsOnly('Cmaj7       E/G♭       F♯m7         E/G♭')).toBeTruthy();
+        });
+    });
+
     describe('boundary cases', () => {
         it('returns false for empty string', () => {
             expect(isChordsOnly('')).toBeFalsy();

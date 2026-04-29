@@ -1,7 +1,7 @@
 import InvalidNoteException from '../exception/InvalidNoteException';
 import { mod } from '@/lib/math';
 
-enum NoteName {
+export enum NoteName {
     C = 'C',
     Dflat = 'Db',
     D = 'D',

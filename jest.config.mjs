@@ -9,10 +9,10 @@ const createJestConfig = nextJest({
 /** @type {import('jest').Config} */
 const config = {
     // Add more setup options before each test is run
-    // setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+    setupFilesAfterEnv: ['<rootDir>/src/setupTests.ts'],
 
     testEnvironment: 'jest-environment-jsdom',
-    testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/e2e/'],
+    testPathIgnorePatterns: ['<rootDir>/node_modules/', '<rootDir>/e2e/', '<rootDir>/.claude'],
     // testEnvironmentOptions: {
     //     url: 'http://localhost:3000',
     // },

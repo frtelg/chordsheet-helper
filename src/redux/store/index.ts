@@ -1,13 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import AppReducer from '@/redux/reducer/AppReducer';
-import ChordSheetReducer from '@/redux/reducer/ChordSheetReducer';
-import SongTextReducer from '@/redux/reducer/SongTextReducer';
+import CanonicalReducer from '@/redux/reducer/CanonicalReducer';
 
 const store = configureStore({
     reducer: {
         app: AppReducer,
-        songText: SongTextReducer,
-        chordSheet: ChordSheetReducer,
+        canonical: CanonicalReducer,
     },
 });
 
