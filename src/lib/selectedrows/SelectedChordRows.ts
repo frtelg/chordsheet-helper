@@ -1,102 +1,55 @@
+export type SelectionMode = 'single' | 'range' | 'toggle';
+
 export interface SelectedChordRows {
-    from?: number;
-    to?: number;
+    anchor?: number;
+    indexes: number[];
 }
 
-interface MutableSelectedChordRows extends SelectedChordRows {
-    applyNewSelectedNumber(selectedRowNumber: number): SelectedChordRows;
+export interface SelectionPayload {
+    index: number;
+    mode: SelectionMode;
 }
 
-class NothingSelected implements MutableSelectedChordRows {
-    applyNewSelectedNumber(selectedRowNumber: number): SelectedChordRows {
-        return {
-            from: selectedRowNumber,
-        };
-    }
-}
-
-class OneRowSelected implements MutableSelectedChordRows {
-    constructor(public from: number) {}
-
-    applyNewSelectedNumber(selectedRowNumber: number): SelectedChordRows {
-        if (this.from > selectedRowNumber) {
-            return {
-                from: selectedRowNumber,
-                to: this.from,
-            };
-        }
-
-        if (this.from < selectedRowNumber) {
-            return {
-                from: this.from,
-                to: selectedRowNumber,
-            };
-        }
-
-        return {
-            from: undefined,
-            to: undefined,
-        };
-    }
-}
-
-class RangeSelected implements MutableSelectedChordRows {
-    constructor(
-        public from: number,
-        public to: number
-    ) {}
-
-    applyNewSelectedNumber(selectedRowNumber: number): SelectedChordRows {
-        if (this.from === this.to && selectedRowNumber === this.from) {
-            return {};
-        }
-
-        if (selectedRowNumber === this.from) {
-            return {
-                from: selectedRowNumber + 1,
-                to: this.to > selectedRowNumber + 1 ? this.to : undefined,
-            };
-        }
-
-        if (selectedRowNumber < this.from) {
-            return {
-                to: this.to,
-                from: selectedRowNumber,
-            };
-        }
-
-        if (selectedRowNumber < this.to) {
-            return {
-                from: this.from,
-                to: selectedRowNumber - 1,
-            };
-        }
-
-        if (selectedRowNumber > this.to) {
-            return {
-                from: this.from,
-                to: selectedRowNumber,
-            };
-        }
-
-        return {
-            from: this.from,
-            to: selectedRowNumber > this.from ? selectedRowNumber - 1 : undefined,
-        };
-    }
-}
-
-function getCurrentSelectedRows(currentSelected: SelectedChordRows): MutableSelectedChordRows {
-    const { from, to } = currentSelected;
-
-    if (typeof from === 'undefined') return new NothingSelected(); // typeof from === 'undefined', otherwise 0 will be treated as undefined
-    if (!to || from === to) return new OneRowSelected(from);
-    return new RangeSelected(from, to);
-}
-
-export function determineSelectedRows(
-    currentSelected: SelectedChordRows,
-    selectedRowNumber: number
+export function applySelection(
+    state: SelectedChordRows,
+    { index, mode }: SelectionPayload
 ): SelectedChordRows {
-    return getCurrentSelectedRows(currentSelected).applyNewSelectedNumber(selectedRowNumber);
+    switch (mode) {
+        case 'single': {
+            // Click same single row → clear
+            if (state.indexes.length === 1 && state.indexes[0] === index) {
+                return { anchor: undefined, indexes: [] };
+            }
+            return { anchor: index, indexes: [index] };
+        }
+
+        case 'range': {
+            // Shift+click: extend from anchor to index
+            const anchor = state.anchor ?? index;
+            const min = Math.min(anchor, index);
+            const max = Math.max(anchor, index);
+            const indexes = Array.from({ length: max - min + 1 }, (_, i) => min + i);
+            return { anchor, indexes };
+        }
+
+        case 'toggle': {
+            // Cmd/Ctrl+click: add or remove individual index
+            const exists = state.indexes.includes(index);
+            const indexes = exists
+                ? state.indexes.filter((i) => i !== index)
+                : [...state.indexes, index].sort((a, b) => a - b);
+            return { anchor: index, indexes };
+        }
+    }
+}
+
+export function selectAll(rowCount: number): SelectedChordRows {
+    return {
+        anchor: 0,
+        indexes: Array.from({ length: rowCount }, (_, i) => i),
+    };
+}
+
+export function clearSelection(): SelectedChordRows {
+    return { anchor: undefined, indexes: [] };
 }

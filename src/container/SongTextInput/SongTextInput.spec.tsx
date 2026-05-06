@@ -4,13 +4,23 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import CanonicalReducer, { setCanonical } from '@/redux/reducer/CanonicalReducer';
 import AppReducer from '@/redux/reducer/AppReducer';
+import ToastReducer from '@/redux/reducer/ToastReducer';
 import SongTextInput from './index';
 
 function makeStore(preloadedCanonical?: string) {
     return configureStore({
-        reducer: { canonical: CanonicalReducer, app: AppReducer },
+        reducer: { canonical: CanonicalReducer, app: AppReducer, toast: ToastReducer },
         preloadedState: preloadedCanonical
-            ? { canonical: { value: preloadedCanonical, history: [], selected: {}, key: undefined } }
+            ? {
+                  canonical: {
+                      value: preloadedCanonical,
+                      history: [],
+                      lineIds: [],
+                      selected: { anchor: undefined, indexes: [] },
+                      clipboard: [],
+                      key: undefined,
+                  },
+              }
             : undefined,
     });
 }

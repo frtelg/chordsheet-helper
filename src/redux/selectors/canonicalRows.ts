@@ -6,8 +6,20 @@ import findKey from '@/lib/key/findKey';
 export type { Row };
 
 const selectCanonicalValue = (state: RootState) => state.canonical.value;
+const selectLineIds = (state: RootState) => state.canonical.lineIds;
 
-export const selectRows = createSelector(selectCanonicalValue, parseCanonical);
+/** Rows derived from the canonical string, with stable ids merged in from state. */
+export const selectRows = createSelector(
+    selectCanonicalValue,
+    selectLineIds,
+    (value, lineIds): Row[] => {
+        const rows = parseCanonical(value);
+        return rows.map((row) => ({
+            ...row,
+            id: lineIds[row.sourceLineIndex] ?? row.id,
+        }));
+    }
+);
 
 export const selectChordTokens = createSelector(selectRows, (rows) =>
     rows.flatMap((r) => {

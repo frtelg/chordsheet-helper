@@ -1,6 +1,7 @@
 import isChordsOnly from '@/lib/chord/isChordsOnly';
 
 export interface Row {
+    id: string;
     chord: string;
     lyric: string;
     isInstrumental: boolean;
@@ -105,6 +106,7 @@ export function parseCanonical(value: string): Row[] {
     while (i < lines.length) {
         if (tags[i] === 'chord-only') {
             rows.push({
+                id: '',
                 chord: stripBrackets(lines[i]),
                 lyric: '',
                 isInstrumental: true,
@@ -127,6 +129,7 @@ export function parseCanonical(value: string): Row[] {
             if (rests > 0) {
                 for (let r = 0; r < rests; r++) {
                     rows.push({
+                        id: '',
                         chord: '',
                         lyric: '',
                         isInstrumental: true,
@@ -143,6 +146,7 @@ export function parseCanonical(value: string): Row[] {
         } else {
             const { chord, lyric } = parseBracketedLine(lines[i]);
             rows.push({
+                id: '',
                 chord,
                 lyric,
                 isInstrumental: false,

@@ -76,6 +76,26 @@ export class ChordSheetApp {
         return this.page.locator('.ChordInput').nth(index);
     }
 
+    /** New UX: nth row (role="option") */
+    rowAt(index: number) {
+        return this.page.locator('[role="option"]').nth(index);
+    }
+
+    /** New UX: Selection action bar */
+    get selectionActionBar() {
+        return this.page.locator('.SelectionActionBar');
+    }
+
+    /** New UX: Selection pill showing count */
+    get selectionPill() {
+        return this.page.locator('.SelectionPill');
+    }
+
+    /** New UX: Snackbar */
+    get snackbar() {
+        return this.page.locator('.Snackbar');
+    }
+
     // --- Actions ---
 
     /**
@@ -121,6 +141,88 @@ export class ChordSheetApp {
     async submitChanges() {
         await this.submitButton.click();
         await this.resultView.waitFor({ state: 'visible' });
+    }
+
+    // --- New UX helpers ---
+
+    /**
+     * Select a row by dispatching to the Redux store via window.__store__.
+     * More reliable than clicking (avoids hitting chord/lyric inputs).
+     */
+    async selectRow(index: number) {
+        const row = this.rowAt(index);
+        // Get the sourceLineIndex from aria-* or fallback to row index
+        await this.page.evaluate((rowIndex: number) => {
+            const store = (window as Record<string, unknown>).__store__ as {
+                dispatch: (action: { type: string; payload: unknown }) => void;
+                getState: () => { canonical: { selected: unknown } };
+            };
+            store.dispatch({ type: 'canonical/setSelected', payload: { index: rowIndex, mode: 'single' } });
+        }, index);
+        await row.waitFor({ state: 'visible' });
+    }
+
+    /** Shift-click a row to extend the selection from anchor. */
+    async shiftSelectRow(index: number) {
+        await this.page.evaluate((rowIndex: number) => {
+            const store = (window as Record<string, unknown>).__store__ as {
+                dispatch: (action: { type: string; payload: unknown }) => void;
+            };
+            store.dispatch({ type: 'canonical/setSelected', payload: { index: rowIndex, mode: 'range' } });
+        }, index);
+    }
+
+    /** Cmd/Ctrl-click a row to toggle it in/out of the selection. */
+    async cmdSelectRow(index: number) {
+        await this.page.evaluate((rowIndex: number) => {
+            const store = (window as Record<string, unknown>).__store__ as {
+                dispatch: (action: { type: string; payload: unknown }) => void;
+            };
+            store.dispatch({ type: 'canonical/setSelected', payload: { index: rowIndex, mode: 'toggle' } });
+        }, index);
+    }
+
+    /**
+     * Open the kebab menu for `rowIndex` and click `itemName`.
+     * Hovers over the row first so the kebab becomes visible.
+     */
+    async clickKebabMenuItem(rowIndex: number, itemName: string) {
+        const row = this.rowAt(rowIndex);
+        // Hover the row so KebabMenu--visible class is added (opacity 0→1)
+        await row.hover();
+        // Wait for the KebabTrigger to become visible (opacity transition ~100ms)
+        const trigger = row.locator('.KebabTrigger');
+        await trigger.waitFor({ state: 'visible' });
+        await trigger.click();
+        await this.page.getByRole('menuitem', { name: itemName }).click();
+    }
+
+    /**
+     * Clear all selected rows via the Redux store.
+     */
+    async clearSelection() {
+        await this.page.evaluate(() => {
+            const store = (window as Record<string, unknown>).__store__ as {
+                dispatch: (action: { type: string }) => void;
+            };
+            store.dispatch({ type: 'canonical/clearSelected' });
+        });
+    }
+
+    /**
+     * Read the numeric count from the SelectionPill (e.g. "3 rows selected" → 3).
+     */
+    async getSelectionPillCount(): Promise<number> {
+        const text = await this.selectionPill.textContent();
+        const match = text?.match(/(\d+)/);
+        return match ? parseInt(match[1], 10) : 0;
+    }
+
+    /**
+     * Click a button in the SelectionActionBar by its title attribute.
+     */
+    async clickActionBarButton(title: string) {
+        await this.page.locator(`.SelectionBarButton[title="${title}"]`).click();
     }
 }
 
