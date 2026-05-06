@@ -1,135 +1,133 @@
 ## 1. Selection State Refactor
 
-- [ ] 1.1 Replace `SelectedChordRows = { from?, to? }` with `{ anchor?: number; indexes: number[] }` (sorted-array-backed set) in `src/lib/selectedrows/SelectedChordRows.ts`
-- [ ] 1.2 Replace the `NothingSelected | OneRowSelected | RangeSelected` state machine with a pure function `applySelection(state, { index, mode: 'single' | 'range' | 'toggle' }) => state`
-- [ ] 1.3 Add `selectAll(rowCount: number)` and `clearSelection()` helpers
-- [ ] 1.4 Rewrite `SelectedChordRows.spec.ts` to cover: empty → single, single → range, range → range extension forward/backward, range collapse to single, toggle add/remove, toggle on empty, click same single → clear, select-all, clear, mode dispatch precedence
-- [ ] 1.5 Update `CanonicalReducer.setSelected` to accept the new payload `{ index: number; mode: SelectionMode }`; update `clearSelected` reducer to call `clearSelection()`
+- [x] 1.1 Replace `SelectedChordRows = { from?, to? }` with `{ anchor?: number; indexes: number[] }` (sorted-array-backed set) in `src/lib/selectedrows/SelectedChordRows.ts`
+- [x] 1.2 Replace the `NothingSelected | OneRowSelected | RangeSelected` state machine with a pure function `applySelection(state, { index, mode: 'single' | 'range' | 'toggle' }) => state`
+- [x] 1.3 Add `selectAll(rowCount: number)` and `clearSelection()` helpers
+- [x] 1.4 Rewrite `SelectedChordRows.spec.ts` to cover: empty → single, single → range, range → range extension forward/backward, range collapse to single, toggle add/remove, toggle on empty, click same single → clear, select-all, clear, mode dispatch precedence
+- [x] 1.5 Update `CanonicalReducer.setSelected` to accept the new payload `{ index: number; mode: SelectionMode }`; update `clearSelected` reducer to call `clearSelection()`
 
-## 2. Canonical Reducer — Move, Clipboard, Delete, Duplicate
+## 2. Chord-Only Operations
 
-- [ ] 2.1 Rewrite `moveUp` as symmetric line swap: clamp at index 0 (no-op, no history push); otherwise swap `lines[N]` with `lines[N-1]` and rejoin
-- [ ] 2.2 Rewrite `moveDown` as symmetric line swap: clamp at last index (no-op, no history push); otherwise swap `lines[N]` with `lines[N+1]` and rejoin
-- [ ] 2.3 Add `moveRow({ from: number; to: number })` for drag-and-drop: splice line `from` out, insert at `to`; one history entry per drop
-- [ ] 2.4 Add `clipboard: string[]` field to `CanonicalState` initial state
-- [ ] 2.5 Add `copySelected(state)` action: writes the lines at `state.selected.indexes` (in index order) into `state.clipboard`. No history push. Selection preserved.
-- [ ] 2.6 Add `cutSelected(state)` action: copies as above, then deletes the lines, then clears selection. One history entry. Pushes a "Cut N rows" toast with undo.
-- [ ] 2.7 Replace `pasteSelected(targetIdx)` with `pasteAfter(targetIdx)`: inserts `state.clipboard` lines after `lines[targetIdx]` (non-destructive). Selection becomes the newly inserted indexes. One history entry. Pushes a "Pasted N rows" toast with undo.
-- [ ] 2.8 Add `deleteSelected(state)` action: removes lines at `state.selected.indexes`. Clears selection. One history entry. Pushes a "Deleted N rows" toast with undo.
-- [ ] 2.9 Add `duplicateRow(rowIdx)` action: inserts a copy of `lines[rowIdx]` immediately after. One history entry.
-- [ ] 2.10 Update `CanonicalReducer.spec.ts` covering: moveUp/Down at boundaries, moveUp/Down in the middle, swap involving silent-rest line, swap involving chord-only line, copy → paste-after produces expected canonical, cut → paste-after round-trip, delete with non-contiguous selection, duplicateRow at last index, undo through every new action
+> **Principle:** Lyrics are immovable. All operations manipulate chord VALUES only. No canonical line is ever deleted by a chord operation.
+
+- [ ] 2.1 Add `extractChord(line: string): string` helper in `src/lib/onsong/lineHelpers.ts` — returns bracket content for `[chord]lyric`, the whole line for chord-only lines, `''` for lyric-only or empty lines
+- [ ] 2.2 Add `extractLyric(line: string): string` helper — returns lyric portion after `]`, empty string for chord-only or empty lines
+- [ ] 2.3 Add `rebuildLine(chord: string, lyric: string): string` helper — returns `[chord]lyric` if both non-empty, `lyric` if chord empty, `chord` if lyric empty, `''` if both empty
+- [ ] 2.4 Rewrite `moveUp(N)` as chord-value swap: extract chord from `lines[N]` and `lines[N-1]`, swap, rebuild both lines with their original lyrics, push history. Clamp at index 0 (no-op, no history push). Lyrics stay in place.
+- [ ] 2.5 Rewrite `moveDown(N)` as chord-value swap with `lines[N+1]`. Clamp at last index.
+- [ ] 2.6 For a contiguous multi-row selection `[minIdx..maxIdx]`: `moveUp` performs left-rotation of chord values in `[minIdx-1..maxIdx]` (chord above block shifts to bottom of block, block shifts up by one); `moveDown` performs right-rotation of `[minIdx..maxIdx+1]`. Single-row selection calls the single-swap path.
+- [ ] 2.7 Remove `moveRow({ from, to })` (whole-line DnD reorder is out of scope for this change)
+- [ ] 2.8 Update `clipboard: string[]` field in `CanonicalState` to hold chord VALUE strings (not whole lines)
+- [ ] 2.9 Rewrite `copySelected()`: writes `selected.indexes.map(i => extractChord(lines[i]))` to `state.clipboard`. No history push. Selection preserved.
+- [ ] 2.10 Rewrite `cutSelected()`: same as copySelected, then sets chord to `''` on each source row via `rebuildLine('', extractLyric(lines[i]))`. One history entry. Pushes "Cut N chord(s)" toast with undo. Does NOT delete canonical lines.
+- [ ] 2.11 Add `pasteChords(targetIdx: number)`: replaces chord values at rows `targetIdx, targetIdx+1, …` with clipboard values (downward overwrite). Lyrics at those rows untouched. One history entry. Pushes "Pasted N chord(s)" toast with undo. Does NOT insert new canonical lines.
+- [ ] 2.12 Add `clearChords()`: sets chord to `''` on each row in `selected.indexes` (same rebuild as cutSelected but no clipboard write). One history entry. Pushes "Cleared N chord(s)" toast with undo.
+- [ ] 2.13 Remove `pasteAfter`, `deleteSelected`, and `duplicateRow` actions (whole-line operations; violate lyrics-immovable principle)
+- [ ] 2.14 Rewrite `CanonicalReducer.spec.ts` covering: moveUp/Down at boundaries (no-op, no history), single-swap in the middle, swap involving chord-only line, swap involving lyric-only line, multi-row left/right rotation, copy → pasteChords produces expected chord values with lyrics intact, cutSelected clears chords without deleting lines, pasteChords overwrites chord values downward, clearChords sets chords to empty, undo through every new action
 
 ## 3. Stable Line IDs
 
-- [ ] 3.1 Add `lineIds: string[]` field to `CanonicalState`
-- [ ] 3.2 On `setCanonical`, recompute `lineIds` via line-by-line LCS-style diff against the previous canonical, preserving ids for unchanged or shifted lines and minting new ids (`nanoid()`) for new lines
-- [ ] 3.3 On `replaceLine(N)`, mint a new id for `lineIds[N]`
-- [ ] 3.4 On `moveUp`/`moveDown`/`moveRow`/`copySelected`/`cutSelected`/`pasteAfter`/`deleteSelected`/`duplicateRow`, splice `lineIds` in lockstep with `lines`
-- [ ] 3.5 Expose `lineIds` through the row selector so that `Row.id` is the stable id; remove the content-based React key
-- [ ] 3.6 Unit tests: identical canonical content but reordered lines preserves ids; an inserted line gets a new id; a replaced line gets a new id; an undo restores the prior id sequence
+- [x] 3.1 Add `lineIds: string[]` field to `CanonicalState`
+- [x] 3.2 On `setCanonical`, recompute `lineIds` via line-by-line LCS-style diff against the previous canonical, preserving ids for unchanged or shifted lines and minting new ids (`nanoid()`) for new lines
+- [x] 3.3 On `replaceLine(N)`, mint a new id for `lineIds[N]`
+- [ ] 3.4 On `moveUp`/`moveDown`: do NOT swap `lineIds` — chord-only moves do not reorder canonical lines. On `cutSelected`/`clearChords`/`pasteChords`: `lineIds` remain in canonical order unchanged. Remove `lineIds` splicing from any removed whole-line actions.
+- [x] 3.5 Expose `lineIds` through the row selector so that `Row.id` is the stable id; remove the content-based React key
+- [x] 3.6 Unit tests: identical canonical content but reordered lines preserves ids; an inserted line gets a new id; a replaced line gets a new id; an undo restores the prior id sequence
 
 ## 4. Selection Action Bar
 
-- [ ] 4.1 Create `src/container/ChordSheetEditor/SelectionActionBar/index.tsx` rendering the row-count pill and buttons: `Move ↑`, `Move ↓`, `Copy`, `Cut`, `Paste after target`, `Delete`, `Clear`
-- [ ] 4.2 Render bar inside `.ChordSheetEditor` with `position: sticky; bottom: 0`; only when `indexes.length > 0`
-- [ ] 4.3 `Move ↑` / `Move ↓` buttons: enabled only when selection is contiguous AND not at the corresponding boundary; dispatch a sequence of swaps in the right order (descending for up, ascending for down) to slide the whole block one step
-- [ ] 4.4 `Paste after target`: enabled only when `clipboard.length > 0` AND exactly one row has focus or hover; dispatches `pasteAfter(focusedIdx)`
-- [ ] 4.5 `Copy` / `Cut` / `Delete` / `Clear`: dispatch the corresponding actions
+- [x] 4.1 Create `src/container/ChordSheetEditor/SelectionActionBar/index.tsx` rendering the row-count pill and buttons
+- [x] 4.2 Render bar inside `.ChordSheetEditor` with `position: sticky; bottom: 0`; only when `indexes.length > 0`
+- [ ] 4.3 `Move ↑` / `Move ↓` buttons: enabled when selection is contiguous AND not at the corresponding boundary; dispatch multi-row chord-rotation (section 2.6)
+- [ ] 4.4 `Paste` button: enabled when `clipboard.length > 0` AND exactly one row has focus or hover; dispatches `pasteChords(focusedIdx)`
+- [ ] 4.5 `Copy` → `copySelected`; `Cut` → `cutSelected`; `Clear chords` → `clearChords`; `Clear selection` → `clearSelected`. Remove `Delete` button entirely.
 - [ ] 4.6 Unit tests for the bar: button-enable logic for each combination of selection size, clipboard presence, focus presence
-- [ ] 4.7 CSS: `.SelectionActionBar` matches the existing `HelpersBar` aesthetic (same surface, border, gap)
+- [x] 4.7 CSS: `.SelectionActionBar` matches the existing `HelpersBar` aesthetic (same surface, border, gap)
 
-## 5. Per-Row UI — Drag Handle, Kebab Menu, Selection Visuals
+## 5. Per-Row UI — Kebab Menu and Selection Visuals
 
-- [ ] 5.1 In `src/container/ChordSheetEditor/ChordSheetRow/index.tsx`, remove the icon strip (`mdiContentCopy`, `mdiChevronTripleDown`, `mdiChevronTripleUp`, `mdiCheckboxMarked`, `mdiCheckboxBlankOutline`, `mdiContentPaste`)
-- [ ] 5.2 Add a leading drag handle (mdi grip icon) revealed on row hover or row keyboard focus; wire it as the only valid drag target (see Section 7)
-- [ ] 5.3 Add a trailing kebab menu (`mdiDotsVertical`) opening a popover with: `Move up`, `Move down`, `Duplicate`, `Delete`, `Copy chord text` (OS clipboard via `copy(row.chord)`)
-- [ ] 5.4 Make the row a `role="option"`, expose `aria-selected`, `tabIndex={isFocused ? 0 : -1}` (roving tabindex managed by the parent listbox)
-- [ ] 5.5 Click handler: `onClick(e)` translates `(e.shiftKey, e.metaKey || e.ctrlKey)` into `'single' | 'range' | 'toggle'` and dispatches `setSelected({ index, mode })`. Clicks inside the chord/lyric inputs do NOT toggle selection.
-- [ ] 5.6 CSS for selected rows: 3px left border in `--color-accent`, subtle `--color-accent-subtle` background; non-selected hover keeps the existing surface tint
-- [ ] 5.7 Component-level tests: click modes dispatch correctly, kebab menu opens and dispatches each action, drag handle emits drag-start with the right id, aria attributes reflect selection state
+- [x] 5.1 In `src/container/ChordSheetEditor/ChordSheetRow/index.tsx`, remove the legacy icon strip
+- [ ] 5.2 Remove the drag handle (`mdiDrag`) and all `useSortable` / dnd-kit wiring from `ChordSheetRow` (DnD is out of scope for this change)
+- [x] 5.3 Kebab menu items: `Move up`, `Move down`, `Clear chord` (replaces Delete — sets chord to `''` on this row only), `Copy chord text` (OS clipboard). Remove `Duplicate` and `Delete` items.
+- [x] 5.4 Make the row a `role="option"`, expose `aria-selected`, `tabIndex={isFocused ? 0 : -1}`
+- [x] 5.5 Click handler dispatches `setSelected({ index, mode })` for single/range/toggle; ignores clicks inside chord/lyric inputs
+- [x] 5.6 CSS for selected rows: 3px left border in `--color-accent`, subtle `--color-accent-subtle` background
+- [ ] 5.7 Component-level tests: click modes dispatch correctly, kebab menu opens and dispatches each chord-only action, aria attributes reflect selection state
 
 ## 6. Editor-Level Keyboard and Listbox Wiring
 
-- [ ] 6.1 In `src/container/ChordSheetEditor/index.tsx`, wrap the rows in a container with `role="listbox"` and `aria-multiselectable="true"`
-- [ ] 6.2 Add a focused-row state (`useState<number | null>`); render the corresponding row with `tabIndex={0}`
-- [ ] 6.3 Capture `keydown` at the listbox container, with handlers (each early-returns when `document.activeElement` is an `INPUT` or `TEXTAREA`):
+- [x] 6.1 In `src/container/ChordSheetEditor/index.tsx`, wrap rows in `role="listbox"` + `aria-multiselectable="true"`
+- [x] 6.2 Add a focused-row state (`useState<number | null>`); render the corresponding row with `tabIndex={0}`
+- [ ] 6.3 Remove `DndContext` / `SortableContext` / sensor setup from `ChordSheetEditor` (DnD out of scope)
+- [ ] 6.4 Update `keydown` handlers (each early-returns when `document.activeElement` is `INPUT` or `TEXTAREA`):
    - `ArrowDown`/`ArrowUp` — move focus
    - `Space` — toggle selection of focused row (`mode: 'toggle'`)
-   - `Shift+ArrowDown`/`Shift+ArrowUp` — extend selection (`mode: 'range'` with focused row as the new endpoint)
-   - `Cmd/Ctrl+ArrowDown`/`Cmd/Ctrl+ArrowUp` — `moveDown`/`moveUp` of the focused row
+   - `Shift+ArrowDown`/`Shift+ArrowUp` — extend selection (`mode: 'range'`)
+   - `Cmd/Ctrl+ArrowDown`/`Cmd/Ctrl+ArrowUp` — `moveDown(focusedRow)` / `moveUp(focusedRow)` (chord-only swap)
    - `Cmd/Ctrl+C` — `copySelected`
    - `Cmd/Ctrl+X` — `cutSelected`
-   - `Cmd/Ctrl+V` — `pasteAfter(focusedRow)` if clipboard non-empty
+   - `Cmd/Ctrl+V` — `pasteChords(focusedRow)` if clipboard non-empty
    - `Cmd/Ctrl+A` — select all
    - `Esc` — clear selection
-   - `Delete` / `Backspace` — `deleteSelected` (or delete focused row if no selection)
-- [ ] 6.4 Aria-live region announcing selection-count changes ("3 rows selected") and clipboard actions
-- [ ] 6.5 E2E coverage of every shortcut
+   - Remove `Delete`/`Backspace` → `deleteSelected` (whole-line delete is out of scope)
+- [x] 6.5 Aria-live region announcing selection-count changes
+- [ ] 6.6 E2E coverage of every shortcut
 
-## 7. Drag-and-Drop with `dnd-kit`
+## 7. Toast / Snackbar with Undo
 
-- [ ] 7.1 Add `@dnd-kit/core` and `@dnd-kit/sortable` to `dependencies` in `package.json`
-- [ ] 7.2 Wrap the rows list in `<DndContext>` and `<SortableContext items={lineIds} strategy={verticalListSortingStrategy}>`
-- [ ] 7.3 Each row uses `useSortable({ id: row.id })`; the drag handle gets `listeners` and `attributes`; the row itself does not (so dragging only starts from the handle)
-- [ ] 7.4 `onDragEnd` dispatches `moveRow({ from: oldIndex, to: newIndex })`
-- [ ] 7.5 Configure the keyboard sensor for accessible drag-by-keyboard: `Space` to lift, arrows to move, `Space` again to drop, `Esc` to cancel
-- [ ] 7.6 Unit/E2E tests: drag from row 1 to row 4 reorders correctly; keyboard-driven drag with sensors fires the same `moveRow`
+- [x] 7.1 `src/redux/reducer/ToastReducer.ts` with `pushToast` and `dismissToast` actions
+- [x] 7.2 `src/components/Snackbar/index.tsx` with auto-dismiss timer
+- [x] 7.3 `<Snackbar />` mounted in app root
+- [ ] 7.4 Wire `cutSelected`, `clearChords`, and `pasteChords` to `pushToast` with `showUndo: true`; `Undo` button dispatches global `undo()` and dismisses toast
+- [ ] 7.5 Remove wiring to `deleteSelected` / `pasteAfter` (removed actions)
+- [ ] 7.6 Tests: toast appears for cut/clear/paste; clicking `Undo` dispatches undo and dismisses; auto-dismiss after 5s
 
-## 8. Toast / Snackbar with Undo
+## 8. HelpersBar Cleanup
 
-- [ ] 8.1 Create `src/redux/reducer/ToastReducer.ts` with state `{ toast?: { message: string; undoAction?: { type: string; payload?: unknown }; dismissAt: number } }`
-- [ ] 8.2 Add `pushToast` and `dismissToast` actions
-- [ ] 8.3 Create `src/components/Snackbar/index.tsx` rendering the current toast at bottom-center with `Undo` button when `undoAction` is set; auto-dismisses on a timer
-- [ ] 8.4 Mount `<Snackbar />` once in the app root (`src/App.tsx`)
-- [ ] 8.5 Wire `cutSelected`, `deleteSelected`, `pasteAfter`, and any bulk-move action to `pushToast` with the inverse action set as `undoAction`
-- [ ] 8.6 Tests: toast appears for each destructive op; clicking `Undo` dispatches the inverse and dismisses; auto-dismiss after 5s
+- [x] 8.1 Remove the `Clear selected chord rows` icon from `HelpersBar`
+- [x] 8.2 Keep `Undo` and `Enable edit lyrics`
+- [ ] 8.3 Update `HelpersBar` snapshot/unit test if any
 
-## 9. HelpersBar Cleanup
+## 9. Feature Flag and Migration
 
-- [ ] 9.1 Remove the `Clear selected chord rows` icon from `HelpersBar` (now lives in the action bar)
-- [ ] 9.2 Keep `Undo` and `Enable edit lyrics`
-- [ ] 9.3 Update `HelpersBar` snapshot/unit test if any
+- [x] 9.1 `enableNewRowUx: boolean` in `AppReducer`
+- [x] 9.2 Conditionally render old icon strip OR new UI based on flag
+- [x] 9.3 Land change behind flag; smoke-test
+- [x] 9.4 Flip default to `true`
+- [ ] 9.5 In a follow-up cleanup change, remove the flag, old icon strip, and legacy `SelectedChordRows` state-machine classes
 
-## 10. Feature Flag and Migration
+## 10. End-to-End
 
-- [ ] 10.1 Add `enableNewRowUx: boolean` to `AppReducer`, default `false`
-- [ ] 10.2 Conditionally render either the old icon strip + old selection model OR the new UI based on the flag
-- [ ] 10.3 Land the change behind the flag; smoke-test
-- [ ] 10.4 Flip the default to `true` in a follow-up commit
-- [ ] 10.5 In a follow-up cleanup change, remove the flag, the old icon strip, and the legacy `SelectedChordRows` state-machine classes
+- [ ] 10.1 Rewrite `e2e/tests/row-operations.spec.ts`:
+   - move down on row 0 swaps the chord value between rows 0 and 1; lyrics unchanged
+   - move up on row 1 swaps the chord value between rows 0 and 1; lyrics unchanged
+   - move at boundaries is a no-op (canonical unchanged)
+   - multi-row selection: move up rotates chord values left; lyrics stay in place
+- [ ] 10.2 Rewrite `e2e/tests/row-selection.spec.ts`:
+   - click selects single row
+   - shift+click extends range from anchor
+   - cmd+click toggles non-contiguous rows
+   - Esc clears selection
+   - Cmd+A selects all rows
+   - selection pill shows correct count
+- [ ] 10.3 Rewrite `e2e/tests/row-clipboard.spec.ts`:
+   - copy → pasteChords overwrites chord values at target going downward; lyrics intact
+   - cut → pasteChords round-trip: source rows have empty chords, target rows have original chords, lyrics unchanged throughout
+   - undo via snackbar restores chord values after cut; restores after pasteChords
+- [ ] 10.4 Delete `e2e/tests/row-dnd.spec.ts` (DnD is out of scope for this change)
+- [ ] 10.5 Update `e2e/fixtures/chord-sheet-app.ts`: remove `dragRow`; update `selectRow` click position to avoid hitting chord/lyric inputs; update `clickActionBarButton` for chord-only action titles
 
-## 11. End-to-End
+## 11. Cleanup and Wolf Hygiene
 
-- [ ] 11.1 Rewrite `e2e/tests/row-operations.spec.ts`:
-   - move down on row 0 swaps rows 0 and 1
-   - move up on row 1 swaps rows 0 and 1
-   - move at boundaries is a no-op
-- [ ] 11.2 New `e2e/tests/row-selection.spec.ts`:
-   - click selects single
-   - shift+click extends
-   - cmd+click toggles non-contiguous
-   - Esc clears
-   - Cmd+A selects all
-   - selection pill shows count
-- [ ] 11.3 New `e2e/tests/row-clipboard.spec.ts`:
-   - copy → paste after produces an inserted block
-   - cut → paste after round-trips
-   - undo via snackbar restores after delete and after cut
-- [ ] 11.4 New `e2e/tests/row-dnd.spec.ts`:
-   - drag handle reorders a row
-   - keyboard-driven drag (Space + Arrow + Space) reorders a row
-- [ ] 11.5 Update `e2e/fixtures/chord-sheet-app.ts` with helpers: `selectRow`, `shiftSelectRow`, `cmdSelectRow`, `dragRow`, `getSelectionPillCount`, `clickActionBarButton`
+- [ ] 11.1 Delete `pasteAfter`, `deleteSelected`, `duplicateRow`, `moveRow` action code from `CanonicalReducer.ts`
+- [ ] 11.2 Delete `NothingSelected` / `OneRowSelected` / `RangeSelected` classes from `SelectedChordRows.ts` (if any remain)
+- [ ] 11.3 Remove `@dnd-kit/core` and `@dnd-kit/sortable` from `package.json` (no longer used)
+- [ ] 11.4 Update `.wolf/anatomy.md` for new/changed files (`SelectionActionBar`, `Snackbar`, `ToastReducer`, `lineHelpers`)
+- [ ] 11.5 Update `.wolf/cerebrum.md` Key Learnings with the chord-only model and new clipboard semantics
 
-## 12. Cleanup and Wolf Hygiene
+## 12. Quality Gate
 
-- [ ] 12.1 Delete the old hover-only paste icon code and the `pasteSelected` action signature
-- [ ] 12.2 Delete `NothingSelected` / `OneRowSelected` / `RangeSelected` classes
-- [ ] 12.3 Update `.wolf/anatomy.md` for new files (`SelectionActionBar`, `Snackbar`, `ToastReducer`)
-- [ ] 12.4 Update `.wolf/cerebrum.md` Key Learnings with the new selection model and clipboard semantics
-
-## 13. Quality Gate
-
-- [ ] 13.1 `yarn test --watchAll=false` — all suites pass
-- [ ] 13.2 `yarn build` — no errors
-- [ ] 13.3 `yarn playwright test` — all existing tests plus the new selection / clipboard / DnD specs pass
-- [ ] 13.4 Manual smoke: paste a real song, exercise every shortcut, drag-reorder a chorus, cut + paste a verse, hit `Undo` from the snackbar, confirm canonical string is byte-correct
+- [ ] 12.1 `yarn test --watchAll=false` — all suites pass
+- [ ] 12.2 `yarn build` — no errors
+- [ ] 12.3 `yarn playwright test` — all specs pass (including rewritten row-operations, row-selection, row-clipboard)
+- [ ] 12.4 Manual smoke: paste a real song, move individual chords up/down, select a block and move it, copy chord values and paste onto different rows, cut + undo, verify lyrics never move

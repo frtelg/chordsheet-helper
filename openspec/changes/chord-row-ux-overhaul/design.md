@@ -1,62 +1,70 @@
 ## Context
 
-The chord-sheet editor renders one row per parsed line of the canonical bracketed string. Each row hosts a chord input, a lyric input, and a strip of icons. Today the row strip exposes five operations as 1rem icons: `Copy chord` (to OS clipboard), `Move down`, `Move up`, `Select` (visible on hover or when selected), `Paste` (visible on hover only when a selection exists). The page-level `HelpersBar` adds `Undo`, `Clear selected`, and `Enable edit lyrics`. Selection state is `{ from?: number; to?: number }` representing one contiguous range, with hand-rolled state-machine logic in `src/lib/selectedrows/SelectedChordRows.ts` that mutates the range in non-OS-standard ways on each click.
+The chord-sheet editor renders one row per parsed line of the canonical bracketed string. Each row hosts a chord input and a lyric input. Today the row strip exposes five operations as 1rem hover-only icons: `Copy chord` (OS clipboard), `Move down`, `Move up`, `Select`, `Paste`. The page-level `HelpersBar` adds `Undo`, `Clear selected`, and `Enable edit lyrics`.
 
-Three things are wrong:
+Three core problems:
 
-- **Semantics drift.** `moveUp` and `moveDown` are not paired operations. `moveDown(N)` calls `parseBracketedLine(lines[N])`, strips the chord from line N, and writes that chord onto line N+1. `moveUp(N)` simply splices out `lines[N-1]` — it deletes the line above. Looking at the icons (`mdiChevronTripleUp`, `mdiChevronTripleDown`), a user expects a paired "move this row" operation. The implementation is two unrelated mutations.
-- **Selection-model surprise.** The single-range state machine produces non-standard click behaviour. Clicking row 1 → `{from: 1}`. Clicking row 5 → `{from: 1, to: 5}`. Clicking row 3 → `{from: 1, to: 2}` (collapses *toward* the anchor). Clicking row 1 again → `{from: 2, to: 5}` (drops the anchor). Users coming from any file manager, mail client, or DAW expect `click = single`, `shift+click = extend`, `cmd+click = toggle`. None of those work today.
-- **Discoverability gaps.** Hover-only paste icon (no touch path), no drag handle, no kebab menu, no keyboard support, no row-level highlight for selection. Bulk operations live behind per-row icons rather than a contextual bar.
+- **Wrong move semantics.** `moveDown(N)` strips the chord from line N and writes it onto line N+1 (destroying the existing chord there). `moveUp(N)` splices out `lines[N-1]` — it deletes the line above. Neither is a paired, reversible operation. The user's mental model is "move this chord to sit above a different lyric line", not "swap entire canonical lines".
+- **Selection-model surprise.** The single-range state machine produces non-standard behaviour. No `shift+click`, no `cmd+click`, no non-contiguous selection.
+- **Broken paste.** `pasteSelected` has an off-by-one bug (`slice(targetIdx + selectedLines.length + 1)` drops one extra row). The operation also overwrites rows (rather than inserting), which is destructive and unintuitive.
 
-There is also a latent bug in `pasteSelected`: it computes `after = lines.slice(targetIdx + selectedLines.length + 1)`, dropping one extra row at the splice boundary. The slice should be `targetIdx + selectedLines.length` for an overwrite, or — preferred in this design — the operation should not overwrite at all.
+**The fundamental principle driving this redesign:** Lyrics are the immovable structure of the chord sheet. Chords are independent values that sit above lyric lines. All chord-row operations manipulate chord values only; lyric text is never moved or removed by a chord operation.
 
 The constraints we work under:
 
-- The canonical string in `CanonicalReducer.value` remains the single source of truth. All row operations rewrite the canonical string.
-- The left textarea continues to mirror the canonical string. Any change to row order, deletion, or insertion must produce a canonical string that round-trips through `parseCanonical → formatBracketed*`.
-- Existing chord-classifier rules (chord-only lines, silent-rest empty lines from Rule B) must continue to work; row indexes are line indexes in the canonical string, so swap is a swap of two lines as-is.
-- `useSelector(selectRows)` is memoised on the canonical string; row identity is currently keyed by `${sourceLineIndex}-${chord}-${lyric}`. Drag-and-drop reorder needs stable keys for animation, so we will derive a per-line stable id at the slice level (e.g. `nanoid()` on `setCanonical` and on each `replaceLine`).
+- The canonical string in `CanonicalReducer.value` remains the single source of truth. All operations rewrite the canonical string.
+- The left textarea continues to mirror the canonical string. Chord-only mutations must produce a canonical string that round-trips through `parseCanonical → formatBracketed*`.
+- Existing chord-classifier rules (chord-only lines, silent-rest empty lines from Rule B) continue to work.
+- `useSelector(selectRows)` is memoised on the canonical string + lineIds. Stable keys are derived from `lineIds` (nanoid per line, regenerated on `setCanonical` via LCS diff).
 
 ## Goals / Non-Goals
 
 **Goals**
 
-- Symmetric, predictable row reorder via swap and via drag-and-drop.
+- Chord-only move: `moveUp`/`moveDown` swap chord values; lyrics stay in place.
+- Multi-row chord move: block of selected chord values shifts one position up/down (rotation semantics).
 - OS-standard mouse selection: click / shift+click / cmd+click / Esc / Cmd+A.
 - Non-contiguous selection.
 - Always-visible selection state (highlighted rows + selection pill).
-- Bulk operations in a single contextual action bar.
+- Bulk chord operations in a contextual action bar.
+- Paste = overwrite chord values at target going downward (not insert).
+- Cut = copy chord values + clear from source (not delete canonical lines).
 - Full keyboard support with ARIA listbox semantics.
-- Inline undo via snackbar for destructive bulk operations.
-- Fix the off-by-one in paste.
+- Inline undo via snackbar for destructive chord operations.
 - Touch-usable: no operations gated solely on hover.
 
 **Non-Goals**
 
-- Multi-row editing (typing chords across N rows at once).
-- Cross-document copy/paste of rows (OS clipboard interop for row payloads).
-- Reordering by dragging from inside an input — drag is from the handle only.
-- Replacing the global `Undo` button. The page-level undo continues to operate on the canonical-string history.
-- Mobile-first redesign of the editor at large. We add touch parity for these specific operations only.
+- Whole-line reorder (moving lyric + chord together). Lines stay in canonical order.
+- Drag-and-drop reorder of canonical lines. (May be added in a follow-up if users request it.)
+- Cross-document copy/paste via OS clipboard for row payloads.
+- Deleting canonical lines via the chord-row UX. Line deletion remains a manual edit in the lyrics textarea.
+- Replacing the global `Undo` button.
+- Mobile-first redesign of the editor at large.
 
 ## Decisions
 
-### Decision: Move semantics — symmetric row swap, no longer a chord migration
+### Decision: Move semantics — chord-value swap, lyrics immovable
 
-**What:** `moveUp(N)` swaps `lines[N]` with `lines[N-1]`. `moveDown(N)` swaps `lines[N]` with `lines[N+1]`. Both clamp at the boundaries (no-op, no history push). The current "shift chord onto next lyric" behaviour is removed.
+**What:** `moveUp(N)` extracts the chord string from line N and the chord string from line N-1, swaps them, rebuilds both lines with their original lyric texts, and writes back to the canonical. `moveDown(N)` does the same with N and N+1. Both clamp at boundaries (no-op, no history push on no-op).
 
-**Why:** Two arrow icons that look like a paired control must execute a paired operation. The chord-migration semantics is actually a different intent ("push this chord one lyric line later") and never had a corresponding `moveUp` reverse, so it is unrecoverable except via global Undo. Row swap is the canonical, reversible operation users expect from up/down arrows.
+For a contiguous multi-row selection `[minIdx..maxIdx]`, move up performs a left-rotation of chord values in the range `[minIdx-1 .. maxIdx]`: the chord above the block shifts to position `maxIdx`, and the block shifts up by one. Move down is the mirror: right-rotation of `[minIdx .. maxIdx+1]`.
+
+Helper:
+- `extractChord(line: string): string` — returns the chord portion of a canonical line (bracket content for `[chord]lyric`, full line for chord-only).
+- `extractLyric(line: string): string` — returns the lyric portion.
+- `rebuildLine(chord: string, lyric: string): string` — returns `[chord]lyric` if both non-empty, `lyric` if chord empty, `chord` if lyric empty, `''` if both empty.
+
+**Why:** Two arrow icons must execute a paired, reversible operation. The user's intent when clicking "move chord up" is "I want this chord to sit above the lyric one line higher" — not "swap the entire lines". Keeping lyrics fixed preserves the song structure and makes the operation safe for all row types.
 
 **Alternatives considered:**
 
-- *Keep the chord-migration semantics, rename the down arrow to "push chord later":* Preserves the existing E2E test but introduces an asymmetric pair (no "pull chord earlier"). User intent for chord movement is better served by editing the chord input directly or by drag-and-drop of the chord cell — out of scope here.
-- *Make moveDown a chord-migration AND moveUp the inverse (pull chord up from N+1):* Adds a second operation type that competes with row swap and complicates the kebab menu. Rejected for cognitive load.
+- *Symmetric whole-line swap (originally proposed):* Swaps entire canonical lines (chord + lyric together). Rejected — lyric text moves, which is confusing and dangerous. The arrows should move chords, not shuffle verses.
+- *Keep the original destructive chord-migration:* Asymmetric (no paired inverse). Rejected.
 
 ### Decision: Selection state — `{ anchor?: number; indexes: number[] }`
 
-**What:** Replace `SelectedChordRows = { from?: number; to?: number }` with `{ anchor?: number; indexes: number[] }`. `anchor` is the last clicked row (the pivot for shift-extend). `indexes` is the unordered set of selected row indexes, stored as a sorted array for deterministic equality checks.
-
-The selection action accepts a mode discriminator:
+**What:** Replace `SelectedChordRows = { from?: number; to?: number }` with `{ anchor?: number; indexes: number[] }`. `anchor` is the pivot for shift-extend. `indexes` is the sorted array of selected row indexes.
 
 ```ts
 type SelectionMode = 'single' | 'range' | 'toggle';
@@ -64,86 +72,70 @@ setSelected({ index: number; mode: SelectionMode })
 ```
 
 - `single`: `{ anchor: index, indexes: [index] }`. If clicking the only selected row, clears.
-- `range`: extend from `anchor` to `index`. `anchor` itself is unchanged.
-- `toggle`: add/remove `index` from `indexes`. Updates `anchor` to `index`.
+- `range`: extend from `anchor` to `index`. `anchor` unchanged.
+- `toggle`: add/remove `index`. Updates `anchor` to `index`.
 
-**Why:** Matches OS conventions exactly. A `Set`-style backing store decouples selection from the contiguous-range constraint and lets us ditch the bespoke state machine in `SelectedChordRows.ts`.
+**Why:** Matches OS conventions exactly. Decouples selection from the contiguous-range constraint.
 
-**Migration of existing E2E and unit tests:** The old `SelectedChordRows.spec.ts` asserts contiguous-range collapse rules that no longer exist. Tests are rewritten to assert the new mode semantics. `pasteSelected` no longer needs to expand a `[from, to]` into an array — it reads `indexes` directly.
-
-### Decision: Two clipboards — internal row clipboard, separate OS chord-text clipboard
+### Decision: Clipboard holds chord VALUE strings; paste overwrites downward
 
 **What:**
 
-- *Internal row clipboard:* `clipboard: string[]` field on `CanonicalState`. Holds raw canonical lines. Written by `copySelected` and `cutSelected`. Read by `pasteAfter(targetIdx)`, which inserts (does not overwrite) the lines after the target.
-- *OS chord-text clipboard:* The kebab menu item `Copy chord text` calls `copy(row.chord)` against the OS clipboard. This is the only OS-clipboard interaction in the editor.
+- `clipboard: string[]` on `CanonicalState` holds extracted chord strings (not whole canonical lines).
+- `copySelected()` writes `selectedIndexes.map(i => extractChord(lines[i]))` to the clipboard.
+- `cutSelected()` does the same, then sets the chord at each source row to `''`, rebuilds those lines, pushes history, pushes toast.
+- `pasteChords(targetIdx)` replaces chord values at rows `targetIdx, targetIdx+1, targetIdx+2, …` with clipboard values. Lyrics at those rows are untouched. Pushes history, pushes toast.
 
-**Why:** The two operations are conceptually different and currently share an icon set, which causes confusion. Splitting them lets each have an unambiguous label and a single behaviour. Insert-after (rather than overwrite) is the safer default and matches user expectation for "paste rows here". It also fixes the off-by-one bug in the current slice math.
-
-**Alternatives considered:**
-
-- *Use the OS clipboard for the row buffer too:* Would let users paste rows across browser tabs of the app. Rejected for v1 — needs a serialization format (raw canonical lines? JSON?) and security review around `navigator.clipboard.read`. Track separately.
-- *Single overwrite paste with a confirm dialog:* Adds friction for the common case (paste a copied chorus after the verse). Insert-after is the natural undo-able default; overwrite can be added later if users ask for it.
-
-### Decision: Drag-and-drop reorder via `dnd-kit`
-
-**What:** Use `@dnd-kit/core` + `@dnd-kit/sortable` for drag handle reorder. The drag handle is an mdi grip icon (`mdiDragHorizontalVariant`) revealed on row hover or when the row has keyboard focus.
-
-**Why:** `dnd-kit` is the modern, accessible, headless DnD library for React: it ships keyboard, screen-reader, and pointer drivers; works under React 18 strict mode; and integrates cleanly with controlled lists. We avoid `react-beautiful-dnd` (unmaintained, no React 18 support) and `react-dnd` (heavier, less accessible). The library is ~10kB gzipped.
-
-The drop dispatches a single `moveRow({ from, to })` action that rewrites the canonical string by splicing line `from` to position `to`. This is one history entry per drop, regardless of distance.
-
-### Decision: Stable per-line id for animation and React key
-
-**What:** Add a parallel `lineIds: string[]` array on `CanonicalState`. On `setCanonical`, regenerate the array via line-by-line longest-common-subsequence diff against the previous canonical, preserving ids for unchanged or shifted lines. On `replaceLine(N)`, regenerate `lineIds[N]` (line content changed). On `moveRow`/swap, splice the ids in lockstep.
-
-**Why:** React row keys are currently `${sourceLineIndex}-${chord}-${lyric}`, which makes every input commit remount the row (acceptable today because inputs commit on blur). Drag animations need a stable key across reorder. A separate id array gives stable identity without coupling it to row content.
+**Why:** The user's stated intent: "copy 3 chord rows, paste at row 5 → rows 5, 6, 7 get those chords; lyrics stay". This is an overwrite (replace) model, not an insert model. Using chord strings (not whole lines) in the clipboard means paste cannot accidentally corrupt lyrics.
 
 **Alternatives considered:**
 
-- *Use `sourceLineIndex` as the React key:* Breaks animations on reorder — the same DOM node represents different rows on adjacent renders.
-- *Hash content for the key:* Two identical empty lines would collide. Counter argument: collisions are common with silent-rest rows (Rule B).
+- *Insert-after model (previously proposed):* Inserts new canonical lines, displacing existing lyrics downward. Rejected — this is whole-line manipulation. The user wants chord manipulation.
+- *OS clipboard for row buffer:* Needs serialization format + security review. Deferred.
+
+### Decision: Cut/clear do not delete canonical lines
+
+**What:**
+
+- `cutSelected()` clears chord values from selected rows (sets them to `''`); the lyric lines remain in the canonical. Selected rows become chord-empty rows.
+- `clearChords()` (action bar "Clear chords") does the same without copying to clipboard.
+
+**Why:** Deleting canonical lines removes lyrics, which violates the "lyrics are immovable" principle. Clearing only the chord part is safer and reversible via undo.
+
+### Decision: Stable per-line id for React key
+
+**What:** Add `lineIds: string[]` to `CanonicalState`. On `setCanonical`, regenerate via LCS diff. On `replaceLine(N)`, mint a new id for N. `lineIds` is spliced in lockstep on chord-swap operations. Exposed through `selectRows` as `row.id`.
+
+**Why:** React row keys are currently content-based, causing unnecessary remounts. Stable ids make future animation work cheaper.
 
 ### Decision: Action bar is sticky to the bottom of the editor pane
 
-**What:** When `indexes.length > 0`, render a sticky bar at the bottom of `.ChordSheetEditor` containing: row count pill, `Move ↑`, `Move ↓`, `Copy`, `Cut`, `Paste after target` (only when clipboard non-empty AND a single row has focus or hover), `Delete`, `Clear`. The bar is `position: sticky; bottom: 0` inside the scrolling editor container.
+**What:** When `indexes.length > 0`, render sticky bar at bottom of `.ChordSheetEditor`: row count pill, `Move ↑`, `Move ↓`, `Copy`, `Cut`, `Paste` (enabled when clipboard non-empty AND a hover/focus target exists), `Clear chords`, `Clear selection`.
 
-**Why:** The bar disambiguates bulk operations from per-row operations and makes touch usage feasible. Sticky at the bottom keeps the action close to the rows the user just selected (most users select top-down).
+**Why:** Disambiguates bulk chord operations. Touch-usable.
 
-**Alternatives considered:**
+### Decision: Snackbar with `Undo` for destructive chord operations
 
-- *Floating action button (FAB):* Hides destination of paste; users would have to remember the target row.
-- *Top-of-editor bar:* Far from the rows on a long sheet; more mouse travel.
+**What:** `ToastReducer` holds one toast `{ message: string; showUndo: boolean; dismissAt: number }`. `cutSelected`, `clearChords`, `pasteChords` push a toast. The `Undo` button dispatches the global `undo()` action (which pops canonical history) and dismisses.
 
-### Decision: Snackbar with `Undo` for destructive bulk ops
+**Why:** Chord operations that clear or overwrite data need an escape hatch. The global canonical history already tracks the pre-operation state, so `undo()` is sufficient — no need to store inverse actions in the toast.
 
-**What:** A new lightweight toast slice (`src/redux/reducer/ToastReducer.ts`) holds at most one toast `{ message: string; undoAction?: () => Action; dismissAfterMs: number }`. `cutSelected`, `deleteSelected`, `pasteAfter`, and bulk `move` push a toast with the `undo` action. The toast renders bottom-center; auto-dismisses at 5s.
+### Decision: No drag-and-drop in this change
 
-**Why:** Even with the global Undo button, a destructive bulk op feels safer with an inline confirmation. The snackbar is also where we surface "Pasted 4 rows after row 12" feedback so the user knows what happened.
+**What:** Drag-and-drop for whole-line reorder is explicitly out of scope. The drag handle added to rows in section 5 is removed from the new design.
 
-**Alternatives considered:**
-
-- *Confirmation modal before destructive op:* Friction for the common case.
-- *Optimistic with no toast:* Existing model. Insufficient feedback.
+**Why:** DnD makes sense for whole-line reordering. Since this change establishes that lyrics are immovable, whole-line DnD directly contradicts the model. Chord-value DnD (dragging a chord to a different row) is a possible future enhancement but is complex UI.
 
 ## Risks / Trade-offs
 
-- **Test churn.** Every E2E that asserts the old move semantics needs a rewrite. `e2e/tests/row-operations.spec.ts` (3 tests) is the main impact. Unit tests for `SelectedChordRows` and the pasteSelected reducer are also rewritten. Mitigation: rewrite both in lockstep with the implementation.
-- **`dnd-kit` adds a runtime dependency.** ~10kB gzipped. Acceptable; the editor is the heaviest container in the app and DnD is now table-stakes.
-- **Keyboard-handler footgun.** Capturing `Cmd+C/X/V` at the editor level could shadow the browser's native copy/paste when the user has selected text inside an input. Mitigation: handlers ignore the event if `document.activeElement` is an `INPUT` or `TEXTAREA`.
-- **Stable line ids on left-textarea edits.** Live left-textarea typing dispatches `setCanonical` on every keystroke. Computing an LCS diff per keystroke is fine for sub-thousand-line sheets (negligible) but worth measuring. Fallback: regenerate all ids on a wholesale `setCanonical` and only diff on `replaceLine`/swap/`moveRow`.
-- **Selection across silent-rest rows.** Selection is by line index, so a range that crosses a silent-rest line includes the rest. Cut/delete then removes the silent-rest line from the canonical, which alters Rule B classification of the surrounding empties. This is the correct behaviour (the user selected and removed those lines) but worth covering in tests.
-- **Discoverability of new keyboard shortcuts.** A small `?` button in `HelpersBar` opens a keyboard-shortcuts cheat sheet. Out of scope for this change but recommended as a follow-up.
+- **Test churn.** E2E tests and reducer unit tests for move/paste semantics need full rewrite. Mitigation: rewrite in lockstep.
+- **Keyboard-handler footgun.** `Cmd+C/X/V` at editor level shadows browser native copy/paste when user has text selected inside an input. Mitigation: handlers return early if `document.activeElement` is `INPUT` or `TEXTAREA`.
+- **Chord-extract ambiguity on chord-only lines.** For lines with no lyric (`Am G F`, not `[Am]lyrics`), the "chord" IS the whole line and the "lyric" is empty. `rebuildLine('', '')` → `''`, making the row a silent-rest. This is correct behaviour (cutting a chord-only row leaves a blank line) but needs explicit test coverage.
+- **Multi-row rotation with empty boundary chords.** Left-rotating `[minIdx-1..maxIdx]` when line N-1 has no chord is fine — it becomes the new bottom-of-block chord (likely empty string → that row becomes chord-empty after the move, which is correct).
 
 ## Migration Plan
 
-1. Land the new selection state, kebab menu, and action bar behind a feature flag (`enableNewRowUx` in `AppReducer`). Keep the old icon strip rendering when the flag is off.
-2. Migrate `e2e/tests/row-operations.spec.ts` to drive both modes in parallel for one cycle.
-3. Flip the flag default to on. Burn down any regression reports.
-4. Remove the old icon strip and the flag in a follow-up cleanup change.
-
-## Open Questions
-
-- Should `Cmd+A` select all rows in the editor, or all text in the focused input? The proposal goes with "all rows when the listbox container has focus, all text when an input has focus". Confirm with the user once implemented.
-- Should `Delete` with no selection delete the focused row, or no-op? Proposal: delete the focused row, with the focused row visually highlighted by a focus ring so the user is not surprised.
-- Drag-and-drop across silent-rest gaps: does the user expect the silent rests to come along, or to stay where they were? Proposal: line index is the source of truth, so a silent-rest line is just a line and gets dragged like any other. Tests will cover this explicitly.
+1. Land behind `enableNewRowUx` feature flag (default `false`). Keep old icon strip when flag is off.
+2. Rewrite unit and E2E tests to cover new chord-only semantics.
+3. Flip flag default to `true`.
+4. Remove flag and old icon strip in follow-up cleanup change.
