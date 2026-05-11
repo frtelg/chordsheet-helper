@@ -41,7 +41,7 @@
 - [x] 4.3 `Move ↑` / `Move ↓` buttons: enabled when selection is contiguous AND not at the corresponding boundary; dispatch `moveSelectionUp` / `moveSelectionDown`
 - [x] 4.4 `Paste` button: enabled when `clipboard.length > 0` AND focus/hover target exists; dispatches `pasteChords(targetIdx)`
 - [x] 4.5 `Copy` → `copySelected`; `Cut` → `cutSelected`; `Clear chords` → `clearChords`; `Clear selection` → `clearSelected`. No `Delete` button.
-- [ ] 4.6 Unit tests for the bar: button-enable logic for each combination of selection size, clipboard presence, focus presence
+- [x] 4.6 Unit tests for the bar: button-enable logic for each combination of selection size, clipboard presence, focus presence
 - [x] 4.7 CSS: `.SelectionActionBar` matches the existing `HelpersBar` aesthetic (same surface, border, gap)
 
 ## 5. Per-Row UI — Kebab Menu and Selection Visuals
@@ -52,7 +52,7 @@
 - [x] 5.4 Make the row a `role="option"`, expose `aria-selected`, `tabIndex={isFocused ? 0 : -1}`
 - [x] 5.5 Click handler dispatches `setSelected({ index, mode })` for single/range/toggle; ignores clicks inside chord/lyric inputs
 - [x] 5.6 CSS for selected rows: 3px left border in `--color-accent`, subtle `--color-accent-subtle` background
-- [ ] 5.7 Component-level tests: click modes dispatch correctly, kebab menu opens and dispatches each chord-only action, aria attributes reflect selection state
+- [x] 5.7 Component-level tests: click modes dispatch correctly, kebab menu opens and dispatches each chord-only action, aria attributes reflect selection state
 
 ## 6. Editor-Level Keyboard and Listbox Wiring
 
@@ -70,13 +70,13 @@
 - [x] 7.3 `<Snackbar />` mounted in app root
 - [x] 7.4 Wire `cutSelected`, `clearChords`, and `pasteChords` to `pushToast` with `showUndo: true`; `Undo` button dispatches global `undo()` and dismisses toast
 - [x] 7.5 Remove wiring to `deleteSelected` / `pasteAfter` (removed actions)
-- [ ] 7.6 Tests: toast appears for cut/clear/paste; clicking `Undo` dispatches undo and dismisses; auto-dismiss after 5s
+- [x] 7.6 Tests: toast appears for cut/clear/paste; clicking `Undo` dispatches undo and dismisses; auto-dismiss after 5s
 
 ## 8. HelpersBar Cleanup
 
 - [x] 8.1 Remove the `Clear selected chord rows` icon from `HelpersBar`
 - [x] 8.2 Keep `Undo` and `Enable edit lyrics`
-- [ ] 8.3 Update `HelpersBar` snapshot/unit test if any
+- [x] 8.3 No HelpersBar snapshot or unit test exists — nothing to update
 
 ## 9. Feature Flag and Migration
 
@@ -96,15 +96,15 @@
 
 ## 11. Cleanup and Wolf Hygiene
 
-- [ ] 11.1 Delete remaining dnd-kit imports from `package.json`
-- [ ] 11.2 Check `SelectedChordRows.ts` for any lingering state-machine classes
-- [ ] 11.3 Remove `@dnd-kit/core` and `@dnd-kit/sortable` from `package.json` (no longer used)
-- [ ] 11.4 Update `.wolf/anatomy.md` for new/changed files (`SelectionActionBar`, `Snackbar`, `ToastReducer`, `lineHelpers`)
-- [ ] 11.5 Update `.wolf/cerebrum.md` Key Learnings with the chord-only model and new clipboard semantics
+- [x] 11.1 Delete remaining dnd-kit imports from `package.json`
+- [x] 11.2 Checked `SelectedChordRows.ts` — no lingering state-machine classes
+- [x] 11.3 Remove `@dnd-kit/core` and `@dnd-kit/sortable` from `package.json` (no longer used)
+- [x] 11.4 Update `.wolf/anatomy.md` for new/changed files (`SelectionActionBar`, `Snackbar`, `ToastReducer`, `lineHelpers`)
+- [x] 11.5 Updated `.wolf/cerebrum.md` Key Learnings with the chord-only model and new clipboard semantics
 
 ## 12. Quality Gate
 
-- [x] 12.1 `yarn test --watchAll=false` — 471 tests, all passing
+- [x] 12.1 `yarn test --watchAll=false` — 514 tests, all passing
 - [x] 12.2 `yarn build` — no errors
 - [x] 12.3 `yarn playwright test` — 57/57 tests pass (44 original + 13 new row tests)
 - [ ] 12.4 Manual smoke: paste a real song, move individual chords up/down, select a block and move it, copy chord values and paste onto different rows, cut + undo, verify lyrics never move
