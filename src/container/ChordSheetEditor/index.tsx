@@ -87,24 +87,18 @@ const ChordSheetEditor: FunctionComponent = () => {
             }
             case e.key === 'ArrowDown' && e.shiftKey && !isMod: {
                 e.preventDefault();
-                setFocusedRowIndex((prev) => {
-                    const next = Math.min(totalRows - 1, (prev ?? -1) + 1);
-                    if (next >= 0) {
-                        const row = rows[next];
-                        dispatch(setSelected({ index: row.sourceLineIndex, mode: 'range' }));
-                    }
-                    return next;
-                });
+                const nextDown = Math.min(totalRows - 1, (focusedRowIndex ?? -1) + 1);
+                setFocusedRowIndex(nextDown);
+                if (nextDown >= 0) {
+                    dispatch(setSelected({ index: rows[nextDown].sourceLineIndex, mode: 'range' }));
+                }
                 break;
             }
             case e.key === 'ArrowUp' && e.shiftKey && !isMod: {
                 e.preventDefault();
-                setFocusedRowIndex((prev) => {
-                    const next = Math.max(0, (prev ?? 1) - 1);
-                    const row = rows[next];
-                    dispatch(setSelected({ index: row.sourceLineIndex, mode: 'range' }));
-                    return next;
-                });
+                const nextUp = Math.max(0, (focusedRowIndex ?? 1) - 1);
+                setFocusedRowIndex(nextUp);
+                dispatch(setSelected({ index: rows[nextUp].sourceLineIndex, mode: 'range' }));
                 break;
             }
             case e.key === ' ': {

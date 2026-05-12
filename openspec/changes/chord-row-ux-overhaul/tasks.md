@@ -61,7 +61,7 @@
 - [x] 6.3 Remove `DndContext` / `SortableContext` / sensor setup from `ChordSheetEditor` (DnD out of scope)
 - [x] 6.4 Updated `keydown` handlers with chord-only operations: `Cmd/Ctrl+ArrowDown/Up` → chord-only swap; `Cmd/Ctrl+V` → `pasteChords`; removed `Delete`/`Backspace` → `deleteSelected`; all others intact
 - [x] 6.5 Aria-live region announcing selection-count changes
-- [ ] 6.6 E2E coverage of every shortcut
+- [x] 6.6 E2E coverage of every shortcut (13 tests in keyboard-shortcuts.spec.ts)
 
 ## 7. Toast / Snackbar with Undo
 
@@ -106,5 +106,5 @@
 
 - [x] 12.1 `yarn test --watchAll=false` — 514 tests, all passing
 - [x] 12.2 `yarn build` — no errors
-- [x] 12.3 `yarn playwright test` — 57/57 tests pass (44 original + 13 new row tests)
+- [x] 12.3 `yarn playwright test` — 70/70 tests pass (57 prior + 13 keyboard-shortcut E2E)
 - [ ] 12.4 Manual smoke: paste a real song, move individual chords up/down, select a block and move it, copy chord values and paste onto different rows, cut + undo, verify lyrics never move
