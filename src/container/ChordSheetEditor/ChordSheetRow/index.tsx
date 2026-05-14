@@ -94,8 +94,12 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
                     onRowHover(null);
                 }}
                 onClick={(e) => {
-                    if ((e.target as HTMLElement).tagName === 'INPUT') return;
-                    if ((e.target as HTMLElement).closest('.KebabMenu')) return;
+                    const target = e.target as HTMLElement;
+                    if (target.closest('.KebabMenu')) return;
+                    const hasModifier = e.shiftKey || e.metaKey || e.ctrlKey;
+                    const isInput = target.tagName === 'INPUT';
+                    if (isInput && !hasModifier) return;
+                    if (isInput && hasModifier) e.preventDefault();
                     const mode = e.shiftKey
                         ? 'range'
                         : e.metaKey || e.ctrlKey

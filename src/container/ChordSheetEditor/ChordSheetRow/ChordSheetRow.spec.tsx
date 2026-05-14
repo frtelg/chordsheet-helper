@@ -120,6 +120,30 @@ describe('ChordSheetRow click mode dispatch', () => {
         await user.click(screen.getByRole('option'), { metaKey: true });
         expect(store.getState().canonical.selected.indexes).not.toContain(0);
     });
+
+    it('plain click on chord input does not change selection', () => {
+        const store = makeStore([]);
+        renderRow(store);
+        const chordInput = screen.getAllByRole('textbox')[0];
+        fireEvent.click(chordInput);
+        expect(store.getState().canonical.selected.indexes).toEqual([]);
+    });
+
+    it('meta-click on chord input still toggles selection', () => {
+        const store = makeStore([]);
+        renderRow(store);
+        const chordInput = screen.getAllByRole('textbox')[0];
+        fireEvent.click(chordInput, { metaKey: true });
+        expect(store.getState().canonical.selected.indexes).toContain(0);
+    });
+
+    it('shift-click on lyric input still extends selection', () => {
+        const store = makeStore([]);
+        renderRow(store);
+        const lyricInput = screen.getAllByRole('textbox')[1];
+        fireEvent.click(lyricInput, { shiftKey: true });
+        expect(store.getState().canonical.selected.indexes).toContain(0);
+    });
 });
 
 // ── Kebab menu ────────────────────────────────────────────────────────────────
