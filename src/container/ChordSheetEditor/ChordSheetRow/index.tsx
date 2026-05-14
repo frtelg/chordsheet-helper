@@ -158,6 +158,10 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
                           ? 'toggle'
                           : 'single';
                     dispatch(setSelected({ index: row.sourceLineIndex, mode }));
+                    // Update focus to the clicked row so subsequent keyboard
+                    // actions (e.g. Cmd+V paste) anchor at the clicked row,
+                    // not at a stale previously-focused row.
+                    onRowFocus(rowIndex);
                 }}
                 onFocus={() => onRowFocus(rowIndex)}
             >

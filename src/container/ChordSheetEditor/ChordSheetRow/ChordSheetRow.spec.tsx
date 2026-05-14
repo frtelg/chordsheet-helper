@@ -151,6 +151,32 @@ describe('ChordSheetRow click mode dispatch', () => {
         fireEvent.click(lyricInput, { shiftKey: true });
         expect(store.getState().canonical.selected.indexes).toContain(0);
     });
+
+    it('single-click updates focus to clicked row (so subsequent paste anchors here)', async () => {
+        const user = userEvent.setup();
+        const onRowFocus = jest.fn();
+        const store = makeStore([]);
+        renderRow(store, { rowIndex: 2, onRowFocus });
+        await user.click(screen.getByRole('option'));
+        expect(onRowFocus).toHaveBeenCalledWith(2);
+    });
+
+    it('shift-click updates focus to clicked row', () => {
+        const onRowFocus = jest.fn();
+        const store = makeStore([0]);
+        renderRow(store, { rowIndex: 3, onRowFocus });
+        fireEvent.click(screen.getByRole('option'), { shiftKey: true });
+        expect(onRowFocus).toHaveBeenCalledWith(3);
+    });
+
+    it('meta-click updates focus to clicked row', async () => {
+        const user = userEvent.setup();
+        const onRowFocus = jest.fn();
+        const store = makeStore([]);
+        renderRow(store, { rowIndex: 1, onRowFocus });
+        await user.click(screen.getByRole('option'), { metaKey: true });
+        expect(onRowFocus).toHaveBeenCalledWith(1);
+    });
 });
 
 // ── Kebab menu ────────────────────────────────────────────────────────────────
