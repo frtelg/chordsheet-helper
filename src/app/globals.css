@@ -712,6 +712,31 @@ span[role='button']:focus-visible {
 .SongTextRowContainer--dragging {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 100;
+  opacity: 0.5;
+}
+
+/* Row "picked up" via keyboard drag */
+.SongTextRowContainer--lifted {
+  outline: 2px dashed var(--color-accent);
+  outline-offset: -2px;
+  background-color: var(--color-accent-subtle);
+}
+
+/* Drop indicator: thick accent line above/below the target row */
+.SongTextRowContainer--drop-before {
+  box-shadow: inset 0 3px 0 0 var(--color-accent);
+}
+
+.SongTextRowContainer--drop-after {
+  box-shadow: inset 0 -3px 0 0 var(--color-accent);
+}
+
+/* Make the row a flex container in new UX so DragHandle + content + KebabMenu align */
+.SongTextRowContainer[role='option'] {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: relative;
 }
 
 .RowContent {

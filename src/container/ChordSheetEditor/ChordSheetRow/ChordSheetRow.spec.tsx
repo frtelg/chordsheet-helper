@@ -48,11 +48,18 @@ function renderRow(
                 row={row}
                 isFocused={props.isFocused ?? false}
                 isNewUx
+                isDragging={props.isDragging ?? false}
+                isLifted={props.isLifted ?? false}
+                dropIndicator={props.dropIndicator ?? null}
                 onChordInputBlur={props.onChordInputBlur ?? jest.fn()}
                 onLyricInputBlur={props.onLyricInputBlur ?? jest.fn()}
                 enableEditLyrics={props.enableEditLyrics ?? false}
                 onRowFocus={props.onRowFocus ?? jest.fn()}
                 onRowHover={props.onRowHover ?? jest.fn()}
+                onRowDragStart={props.onRowDragStart ?? jest.fn()}
+                onRowDragOver={props.onRowDragOver ?? jest.fn()}
+                onRowDrop={props.onRowDrop ?? jest.fn()}
+                onRowDragEnd={props.onRowDragEnd ?? jest.fn()}
             />
         </Provider>,
     );

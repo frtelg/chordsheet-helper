@@ -4,6 +4,7 @@ import canonicalReducer, {
     transposeAll,
     moveDown,
     moveUp,
+    moveRow,
     moveSelectionUp,
     moveSelectionDown,
     copySelected,
@@ -198,6 +199,92 @@ describe('CanonicalReducer', () => {
             const s = canonicalReducer(start, moveUp(1));
             expect(s.lineIds[0]).toBe(id0);
             expect(s.lineIds[1]).toBe(id1);
+        });
+    });
+
+    describe('moveRow (full-line splice reorder)', () => {
+        it('moves a line forward: row 0 to position 3 of 5 lines', () => {
+            const s1 = canonicalReducer(initial, setCanonical('a\nb\nc\nd\ne'));
+            const s2 = canonicalReducer(s1, moveRow({ from: 0, to: 3 }));
+            expect(s2.value).toBe('b\nc\nd\na\ne');
+        });
+
+        it('moves a line backward: row 3 to position 0', () => {
+            const s1 = canonicalReducer(initial, setCanonical('a\nb\nc\nd\ne'));
+            const s2 = canonicalReducer(s1, moveRow({ from: 3, to: 0 }));
+            expect(s2.value).toBe('d\na\nb\nc\ne');
+        });
+
+        it('reorders lineIds in lockstep with lines', () => {
+            const s1 = canonicalReducer(initial, setCanonical('a\nb\nc\nd\ne'));
+            const [a, b, c, d, e] = s1.lineIds;
+            const s2 = canonicalReducer(s1, moveRow({ from: 0, to: 3 }));
+            expect(s2.lineIds).toEqual([b, c, d, a, e]);
+        });
+
+        it('pushes exactly one history entry regardless of distance', () => {
+            const s1 = canonicalReducer(initial, setCanonical('a\nb\nc\nd\ne'));
+            const histLen = s1.history.length;
+            const s2 = canonicalReducer(s1, moveRow({ from: 0, to: 4 }));
+            expect(s2.history).toHaveLength(histLen + 1);
+        });
+
+        it('no-op when from === to (no history push)', () => {
+            const s1 = canonicalReducer(initial, setCanonical('a\nb\nc'));
+            const histLen = s1.history.length;
+            const s2 = canonicalReducer(s1, moveRow({ from: 1, to: 1 }));
+            expect(s2.value).toBe('a\nb\nc');
+            expect(s2.history).toHaveLength(histLen);
+        });
+
+        it('no-op when from out of bounds', () => {
+            const s1 = canonicalReducer(initial, setCanonical('a\nb'));
+            const histLen = s1.history.length;
+            const s2 = canonicalReducer(s1, moveRow({ from: 5, to: 0 }));
+            expect(s2.value).toBe('a\nb');
+            expect(s2.history).toHaveLength(histLen);
+        });
+
+        it('no-op when to out of bounds', () => {
+            const s1 = canonicalReducer(initial, setCanonical('a\nb'));
+            const histLen = s1.history.length;
+            const s2 = canonicalReducer(s1, moveRow({ from: 0, to: 5 }));
+            expect(s2.value).toBe('a\nb');
+            expect(s2.history).toHaveLength(histLen);
+        });
+
+        it('moves a single-line canonical: no-op (only one line)', () => {
+            const s1 = canonicalReducer(initial, setCanonical('only'));
+            const s2 = canonicalReducer(s1, moveRow({ from: 0, to: 0 }));
+            expect(s2.value).toBe('only');
+        });
+
+        it('moves to last position (boundary)', () => {
+            const s1 = canonicalReducer(initial, setCanonical('a\nb\nc'));
+            const s2 = canonicalReducer(s1, moveRow({ from: 0, to: 2 }));
+            expect(s2.value).toBe('b\nc\na');
+        });
+
+        it('moves to first position (boundary)', () => {
+            const s1 = canonicalReducer(initial, setCanonical('a\nb\nc'));
+            const s2 = canonicalReducer(s1, moveRow({ from: 2, to: 0 }));
+            expect(s2.value).toBe('c\na\nb');
+        });
+
+        it('undo restores prior canonical and lineIds', () => {
+            const s1 = canonicalReducer(initial, setCanonical('a\nb\nc\nd'));
+            const idsBefore = [...s1.lineIds];
+            const s2 = canonicalReducer(s1, moveRow({ from: 0, to: 3 }));
+            const s3 = canonicalReducer(s2, undo());
+            expect(s3.value).toBe('a\nb\nc\nd');
+            expect(s3.lineIds).toEqual(idsBefore);
+        });
+
+        it('recomputes key after reorder', () => {
+            const s1 = canonicalReducer(initial, setCanonical('[C]love\n[G]me\n[Am]always\n[F]grace'));
+            const keyBefore = s1.key;
+            const s2 = canonicalReducer(s1, moveRow({ from: 0, to: 3 }));
+            expect(s2.key).toBe(keyBefore);
         });
     });
 

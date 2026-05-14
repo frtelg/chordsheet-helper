@@ -201,6 +201,26 @@ export const canonicalSlice = createSlice({
         },
 
         /**
+         * Splice the canonical line at `from` to position `to` (full row reorder).
+         * Updates lineIds in lockstep. Single history entry. No-op if from === to
+         * or indices out of bounds.
+         */
+        moveRow: (state, action: PayloadAction<{ from: number; to: number }>) => {
+            const { from, to } = action.payload;
+            const lines = state.value.split('\n');
+            if (from < 0 || from >= lines.length) return;
+            if (to < 0 || to >= lines.length) return;
+            if (from === to) return;
+            pushHistory(state);
+            const [movedLine] = lines.splice(from, 1);
+            lines.splice(to, 0, movedLine);
+            const [movedId] = state.lineIds.splice(from, 1);
+            state.lineIds.splice(to, 0, movedId);
+            state.value = lines.join('\n');
+            state.key = calculateKey(state.value);
+        },
+
+        /**
          * Move selection up: left-rotate chord values in [minIdx-1 .. maxIdx].
          * The chord above the block shifts to the bottom of the block; the block shifts up.
          * Lyrics stay in place. No-op if selection is empty or at top boundary.
@@ -369,6 +389,7 @@ export const {
     transposeAll,
     moveDown,
     moveUp,
+    moveRow,
     moveSelectionUp,
     moveSelectionDown,
     copySelected,

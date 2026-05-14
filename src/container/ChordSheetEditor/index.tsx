@@ -8,6 +8,7 @@ import {
     clearSelected,
     moveUp,
     moveDown,
+    moveRow,
     copySelected,
     cutSelected,
     pasteChords,
@@ -15,7 +16,7 @@ import {
 import { pushToast } from '@/redux/reducer/ToastReducer';
 import { selectRows } from '@/redux/selectors/canonicalRows';
 import { formatBracketedLine } from '@/lib/onsong/bracketedFormatter';
-import ChordSheetRow from '@/container/ChordSheetEditor/ChordSheetRow';
+import ChordSheetRow, { DropPosition } from '@/container/ChordSheetEditor/ChordSheetRow';
 import SelectionActionBar from '@/container/ChordSheetEditor/SelectionActionBar';
 import Transposer from '@/container/ChordSheetEditor/Transposer';
 import HelpersBar from './HelpersBar';
@@ -31,7 +32,73 @@ const ChordSheetEditor: FunctionComponent = () => {
     const [editLyricsToggled, setEditLyricsToggled] = React.useState(false);
     const [focusedRowIndex, setFocusedRowIndex] = useState<number | null>(null);
     const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
+    // Mouse drag state (HTML5 DnD)
+    const [dragFromIndex, setDragFromIndex] = useState<number | null>(null);
+    const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+    const [dragOverPosition, setDragOverPosition] = useState<DropPosition | null>(null);
+    // Keyboard drag state (Space-to-lift)
+    const [liftedRowIndex, setLiftedRowIndex] = useState<number | null>(null);
+    const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
     const listboxRef = useRef<HTMLDivElement>(null);
+
+    /**
+     * Convert (overRowIndex, position) → destination row index (0..rows.length-1).
+     * 'before N' means destination N; 'after N' means destination N+1 — adjusted for the
+     * removal of `from` (when from < raw destination, shift by -1 to land at the same gap).
+     */
+    const resolveDestination = useCallback(
+        (from: number, overIdx: number, position: DropPosition): number => {
+            const raw = position === 'before' ? overIdx : overIdx + 1;
+            const adjusted = from < raw ? raw - 1 : raw;
+            return Math.max(0, Math.min(rows.length - 1, adjusted));
+        },
+        [rows.length]
+    );
+
+    const performMoveRow = useCallback(
+        (from: number, to: number) => {
+            if (from < 0 || from >= rows.length) return;
+            if (to < 0 || to >= rows.length) return;
+            if (from === to) return;
+            const fromLineIndex = rows[from].sourceLineIndex;
+            const toLineIndex = rows[to].sourceLineIndex;
+            dispatch(moveRow({ from: fromLineIndex, to: toLineIndex }));
+            setFocusedRowIndex(to);
+        },
+        [dispatch, rows]
+    );
+
+    const clearDragState = useCallback(() => {
+        setDragFromIndex(null);
+        setDragOverIndex(null);
+        setDragOverPosition(null);
+    }, []);
+
+    const handleRowDragStart = useCallback((rowIndex: number) => {
+        setDragFromIndex(rowIndex);
+    }, []);
+
+    const handleRowDragOver = useCallback((rowIndex: number, position: DropPosition) => {
+        setDragOverIndex(rowIndex);
+        setDragOverPosition(position);
+    }, []);
+
+    const handleRowDrop = useCallback(
+        (rowIndex: number, position: DropPosition) => {
+            if (dragFromIndex === null) {
+                clearDragState();
+                return;
+            }
+            const to = resolveDestination(dragFromIndex, rowIndex, position);
+            performMoveRow(dragFromIndex, to);
+            clearDragState();
+        },
+        [dragFromIndex, resolveDestination, performMoveRow, clearDragState]
+    );
+
+    const handleRowDragEnd = useCallback(() => {
+        clearDragState();
+    }, [clearDragState]);
 
     const toggeEditLyrics = () => setEditLyricsToggled((v) => !v);
 
@@ -74,6 +141,38 @@ const ChordSheetEditor: FunctionComponent = () => {
         const isMod = e.metaKey || e.ctrlKey;
         const totalRows = rows.length;
 
+        // ── Keyboard drag mode ────────────────────────────────────────────
+        if (liftedRowIndex !== null) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                setLiftedRowIndex(null);
+                setDropTargetIndex(null);
+                return;
+            }
+            if (e.key === 'ArrowDown' && !isMod && !e.shiftKey) {
+                e.preventDefault();
+                setDropTargetIndex((prev) => Math.min(totalRows - 1, (prev ?? liftedRowIndex) + 1));
+                return;
+            }
+            if (e.key === 'ArrowUp' && !isMod && !e.shiftKey) {
+                e.preventDefault();
+                setDropTargetIndex((prev) => Math.max(0, (prev ?? liftedRowIndex) - 1));
+                return;
+            }
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                const to = dropTargetIndex ?? liftedRowIndex;
+                if (to !== liftedRowIndex) {
+                    performMoveRow(liftedRowIndex, to);
+                }
+                setLiftedRowIndex(null);
+                setDropTargetIndex(null);
+                return;
+            }
+            // While lifted, swallow other keys to prevent unintended actions
+            return;
+        }
+
         switch (true) {
             case e.key === 'ArrowDown' && !isMod && !e.shiftKey: {
                 e.preventDefault();
@@ -104,8 +203,15 @@ const ChordSheetEditor: FunctionComponent = () => {
             case e.key === ' ': {
                 e.preventDefault();
                 if (focusedRowIndex !== null && focusedRowIndex < rows.length) {
-                    const row = rows[focusedRowIndex];
-                    dispatch(setSelected({ index: row.sourceLineIndex, mode: 'toggle' }));
+                    // Shift+Space → toggle selection (preserved behaviour for accessibility).
+                    // Plain Space → lift the focused row for keyboard-driven reorder.
+                    if (e.shiftKey) {
+                        const row = rows[focusedRowIndex];
+                        dispatch(setSelected({ index: row.sourceLineIndex, mode: 'toggle' }));
+                    } else {
+                        setLiftedRowIndex(focusedRowIndex);
+                        setDropTargetIndex(focusedRowIndex);
+                    }
                 }
                 break;
             }
@@ -213,24 +319,51 @@ const ChordSheetEditor: FunctionComponent = () => {
                                     : ''}
                             </div>
                         )}
-                        {rows.map((row, i) => (
-                            <ChordSheetRow
-                                key={row.id || `${row.sourceLineIndex}-${row.chord}-${row.lyric}`}
-                                rowIndex={i}
-                                row={row}
-                                isFocused={focusedRowIndex === i}
-                                isNewUx={enableNewRowUx}
-                                onChordInputBlur={(newChord) =>
-                                    onChordInputBlurHandler(newChord, row)
-                                }
-                                onLyricInputBlur={(newLyric) =>
-                                    onLyricInputBlurHandler(newLyric, row)
-                                }
-                                enableEditLyrics={editLyricsToggled}
-                                onRowFocus={setFocusedRowIndex}
-                                onRowHover={setHoveredRowIndex}
-                            />
-                        ))}
+                        {rows.map((row, i) => {
+                            // Mouse drag indicator
+                            const mouseDropIndicator: DropPosition | null =
+                                dragFromIndex !== null && dragOverIndex === i && dragFromIndex !== i
+                                    ? dragOverPosition
+                                    : null;
+                            // Keyboard drag indicator
+                            let keyboardDropIndicator: DropPosition | null = null;
+                            if (
+                                liftedRowIndex !== null &&
+                                dropTargetIndex !== null &&
+                                dropTargetIndex === i &&
+                                dropTargetIndex !== liftedRowIndex
+                            ) {
+                                keyboardDropIndicator =
+                                    dropTargetIndex > liftedRowIndex ? 'after' : 'before';
+                            }
+                            return (
+                                <ChordSheetRow
+                                    key={
+                                        row.id || `${row.sourceLineIndex}-${row.chord}-${row.lyric}`
+                                    }
+                                    rowIndex={i}
+                                    row={row}
+                                    isFocused={focusedRowIndex === i}
+                                    isNewUx={enableNewRowUx}
+                                    isDragging={dragFromIndex === i}
+                                    isLifted={liftedRowIndex === i}
+                                    dropIndicator={mouseDropIndicator ?? keyboardDropIndicator}
+                                    onChordInputBlur={(newChord) =>
+                                        onChordInputBlurHandler(newChord, row)
+                                    }
+                                    onLyricInputBlur={(newLyric) =>
+                                        onLyricInputBlurHandler(newLyric, row)
+                                    }
+                                    enableEditLyrics={editLyricsToggled}
+                                    onRowFocus={setFocusedRowIndex}
+                                    onRowHover={setHoveredRowIndex}
+                                    onRowDragStart={handleRowDragStart}
+                                    onRowDragOver={handleRowDragOver}
+                                    onRowDrop={handleRowDrop}
+                                    onRowDragEnd={handleRowDragEnd}
+                                />
+                            );
+                        })}
                     </div>
                     {enableNewRowUx && (
                         <SelectionActionBar

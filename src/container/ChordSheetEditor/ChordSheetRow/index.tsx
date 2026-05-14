@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useRef, useState } from 'react';
 import Input from '@/components/Form/Input';
 import copy from 'copy-to-clipboard';
 import { useDispatch, useSelector } from 'react-redux';
@@ -10,6 +10,7 @@ import {
     mdiCheckboxMarked,
     mdiCheckboxBlankOutline,
     mdiContentPaste,
+    mdiDragVertical,
 } from '@mdi/js';
 import Icon from '@mdi/react';
 import ClickableIcon from '@/components/ClickableIcon';
@@ -17,16 +18,25 @@ import { moveDown, moveUp, setSelected, clearChords } from '@/redux/reducer/Cano
 import { pushToast } from '@/redux/reducer/ToastReducer';
 import { selectRows, Row } from '@/redux/selectors/canonicalRows';
 
+export type DropPosition = 'before' | 'after';
+
 export type ChordSheetRowProps = {
     rowIndex: number;
     row: Row;
     isFocused: boolean;
     isNewUx: boolean;
+    isDragging: boolean;
+    isLifted: boolean;
+    dropIndicator: DropPosition | null;
     onChordInputBlur(newChord: string): void;
     onLyricInputBlur(newLyric: string): void;
     enableEditLyrics: boolean;
     onRowFocus(rowIndex: number): void;
     onRowHover(rowIndex: number | null): void;
+    onRowDragStart(rowIndex: number): void;
+    onRowDragOver(rowIndex: number, position: DropPosition): void;
+    onRowDrop(rowIndex: number, position: DropPosition): void;
+    onRowDragEnd(): void;
 };
 
 const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
@@ -34,14 +44,22 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
     row,
     isFocused,
     isNewUx,
+    isDragging,
+    isLifted,
+    dropIndicator,
     onChordInputBlur,
     onLyricInputBlur,
     enableEditLyrics,
     onRowFocus,
     onRowHover,
+    onRowDragStart,
+    onRowDragOver,
+    onRowDrop,
+    onRowDragEnd,
 }) => {
     const [isHovering, setIsHovering] = useState(false);
     const [kebabOpen, setKebabOpen] = useState(false);
+    const rowRef = useRef<HTMLDivElement>(null);
     const dispatch = useDispatch();
     const selected = useSelector((state: RootState) => state.canonical.selected);
     const rows = useSelector(selectRows);
@@ -74,17 +92,51 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
 
     // ── New UX ──────────────────────────────────────────────────────────────
     if (isNewUx) {
+        const containerClasses = [
+            'SongTextRowContainer',
+            isSelected ? 'SongTextRowContainer--selected' : '',
+            isDragging ? 'SongTextRowContainer--dragging' : '',
+            isLifted ? 'SongTextRowContainer--lifted' : '',
+            dropIndicator === 'before' ? 'SongTextRowContainer--drop-before' : '',
+            dropIndicator === 'after' ? 'SongTextRowContainer--drop-after' : '',
+        ]
+            .filter(Boolean)
+            .join(' ');
         return (
             <div
-                className={[
-                    'SongTextRowContainer',
-                    isSelected ? 'SongTextRowContainer--selected' : '',
-                ]
-                    .filter(Boolean)
-                    .join(' ')}
+                ref={rowRef}
+                className={containerClasses}
                 role="option"
                 aria-selected={isSelected}
+                aria-grabbed={isLifted || isDragging}
                 tabIndex={isFocused ? 0 : -1}
+                draggable
+                onDragStart={(e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', String(rowIndex));
+                    if (rowRef.current) {
+                        e.dataTransfer.setDragImage(rowRef.current, 12, 12);
+                    }
+                    onRowDragStart(rowIndex);
+                }}
+                onDragEnd={() => {
+                    onRowDragEnd();
+                }}
+                onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const midY = rect.top + rect.height / 2;
+                    const position: DropPosition = e.clientY < midY ? 'before' : 'after';
+                    onRowDragOver(rowIndex, position);
+                }}
+                onDrop={(e) => {
+                    e.preventDefault();
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const midY = rect.top + rect.height / 2;
+                    const position: DropPosition = e.clientY < midY ? 'before' : 'after';
+                    onRowDrop(rowIndex, position);
+                }}
                 onMouseEnter={() => {
                     setIsHovering(true);
                     onRowHover(rowIndex);
@@ -109,6 +161,21 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
                 }}
                 onFocus={() => onRowFocus(rowIndex)}
             >
+                <button
+                    type="button"
+                    className={[
+                        'DragHandle',
+                        showAffordances || isLifted ? 'DragHandle--visible' : '',
+                    ]
+                        .filter(Boolean)
+                        .join(' ')}
+                    aria-label={`Reorder row ${rowIndex + 1}`}
+                    aria-pressed={isLifted}
+                    tabIndex={-1}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <Icon path={mdiDragVertical} size="1rem" color="var(--color-text-muted)" />
+                </button>
                 <div className="RowContent">
                     <div className="ChordInputContainer">
                         <Input

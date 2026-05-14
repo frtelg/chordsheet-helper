@@ -70,21 +70,21 @@ test.describe('Keyboard shortcuts', () => {
         await expect(app.rowAt(1)).toHaveAttribute('aria-selected', 'true');
     });
 
-    // ── Space toggles focused row ──────────────────────────────────────────
+    // ── Shift+Space toggles focused row (Space alone lifts for drag) ──────
 
-    test('Space toggles focused row into selection', async ({ app }) => {
+    test('Shift+Space toggles focused row into selection', async ({ app }) => {
         await app.page.locator('[role="listbox"]').focus();
         await app.page.keyboard.press('ArrowDown'); // focus row 0
-        await app.page.keyboard.press(' ');
+        await app.page.keyboard.press('Shift+Space');
         await expect(app.rowAt(0)).toHaveAttribute('aria-selected', 'true');
     });
 
-    test('Space toggles focused row out of selection when already selected', async ({ app }) => {
+    test('Shift+Space toggles focused row out of selection when already selected', async ({ app }) => {
         await app.selectRow(0);
         await expect(app.rowAt(0)).toHaveAttribute('aria-selected', 'true');
         await app.page.locator('[role="listbox"]').focus();
         await app.page.keyboard.press('ArrowDown'); // focus row 0
-        await app.page.keyboard.press(' '); // toggle off
+        await app.page.keyboard.press('Shift+Space'); // toggle off
         await expect(app.rowAt(0)).toHaveAttribute('aria-selected', 'false');
     });
 
