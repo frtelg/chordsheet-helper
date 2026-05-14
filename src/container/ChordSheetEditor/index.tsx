@@ -32,6 +32,11 @@ const ChordSheetEditor: FunctionComponent = () => {
     const [focusedRowIndex, setFocusedRowIndex] = useState<number | null>(null);
     const [hoveredRowIndex, setHoveredRowIndex] = useState<number | null>(null);
     const listboxRef = useRef<HTMLDivElement>(null);
+    const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+    const focusRow = (index: number) => {
+        rowRefs.current[index]?.focus();
+    };
 
     const toggeEditLyrics = () => setEditLyricsToggled((v) => !v);
 
@@ -77,18 +82,23 @@ const ChordSheetEditor: FunctionComponent = () => {
         switch (true) {
             case e.key === 'ArrowDown' && !isMod && !e.shiftKey: {
                 e.preventDefault();
-                setFocusedRowIndex((prev) => Math.min(totalRows - 1, (prev ?? -1) + 1));
+                const next = Math.min(totalRows - 1, (focusedRowIndex ?? -1) + 1);
+                setFocusedRowIndex(next);
+                focusRow(next);
                 break;
             }
             case e.key === 'ArrowUp' && !isMod && !e.shiftKey: {
                 e.preventDefault();
-                setFocusedRowIndex((prev) => Math.max(0, (prev ?? 1) - 1));
+                const next = Math.max(0, (focusedRowIndex ?? 1) - 1);
+                setFocusedRowIndex(next);
+                focusRow(next);
                 break;
             }
             case e.key === 'ArrowDown' && e.shiftKey && !isMod: {
                 e.preventDefault();
                 const nextDown = Math.min(totalRows - 1, (focusedRowIndex ?? -1) + 1);
                 setFocusedRowIndex(nextDown);
+                focusRow(nextDown);
                 if (nextDown >= 0) {
                     dispatch(setSelected({ index: rows[nextDown].sourceLineIndex, mode: 'range' }));
                 }
@@ -98,6 +108,7 @@ const ChordSheetEditor: FunctionComponent = () => {
                 e.preventDefault();
                 const nextUp = Math.max(0, (focusedRowIndex ?? 1) - 1);
                 setFocusedRowIndex(nextUp);
+                focusRow(nextUp);
                 dispatch(setSelected({ index: rows[nextUp].sourceLineIndex, mode: 'range' }));
                 break;
             }
@@ -229,6 +240,9 @@ const ChordSheetEditor: FunctionComponent = () => {
                                 enableEditLyrics={editLyricsToggled}
                                 onRowFocus={setFocusedRowIndex}
                                 onRowHover={setHoveredRowIndex}
+                                setRowRef={(el) => {
+                                    rowRefs.current[i] = el;
+                                }}
                             />
                         ))}
                     </div>

@@ -27,6 +27,7 @@ export type ChordSheetRowProps = {
     enableEditLyrics: boolean;
     onRowFocus(rowIndex: number): void;
     onRowHover(rowIndex: number | null): void;
+    setRowRef?(el: HTMLDivElement | null): void;
 };
 
 const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
@@ -39,6 +40,7 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
     enableEditLyrics,
     onRowFocus,
     onRowHover,
+    setRowRef,
 }) => {
     const [isHovering, setIsHovering] = useState(false);
     const [kebabOpen, setKebabOpen] = useState(false);
@@ -76,6 +78,7 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
     if (isNewUx) {
         return (
             <div
+                ref={setRowRef}
                 className={[
                     'SongTextRowContainer',
                     isSelected ? 'SongTextRowContainer--selected' : '',

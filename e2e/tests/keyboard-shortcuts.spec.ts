@@ -22,6 +22,35 @@ test.describe('Keyboard shortcuts', () => {
         await expect(app.rowAt(0)).toHaveAttribute('tabindex', '-1');
     });
 
+    test('ArrowDown moves DOM focus onto the row option', async ({ app }) => {
+        await app.page.locator('[role="listbox"]').focus();
+        await app.page.keyboard.press('ArrowDown');
+        await expect(app.rowAt(0)).toBeFocused();
+
+        await app.page.keyboard.press('ArrowDown');
+        await expect(app.rowAt(1)).toBeFocused();
+    });
+
+    test('ArrowUp moves DOM focus onto the row option', async ({ app }) => {
+        await app.page.locator('[role="listbox"]').focus();
+        await app.page.keyboard.press('ArrowDown');
+        await app.page.keyboard.press('ArrowDown');
+        await app.page.keyboard.press('ArrowUp');
+        await expect(app.rowAt(0)).toBeFocused();
+    });
+
+    test('Shift+ArrowDown moves DOM focus onto the row option', async ({ app }) => {
+        await app.page.locator('[role="listbox"]').focus();
+        await app.page.keyboard.press('ArrowDown'); // focus row 0
+        await app.page.keyboard.press('Shift+ArrowDown');
+        await expect(app.rowAt(1)).toBeFocused();
+    });
+
+    test('Clicking a chord input does not steal focus to the row container', async ({ app }) => {
+        await app.chordInputAt(2).click();
+        await expect(app.chordInputAt(2)).toBeFocused();
+    });
+
     test('ArrowUp moves focus up', async ({ app }) => {
         await app.page.locator('[role="listbox"]').focus();
         // Move down to row 1 first
