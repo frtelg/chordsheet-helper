@@ -153,7 +153,7 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
                                 type="button"
                                 role="menuitem"
                                 onClick={handleMoveUp}
-                                disabled={row.sourceLineIndex === 0}
+                                disabled={rowIndex === 0}
                             >
                                 Move up
                             </button>
@@ -161,7 +161,7 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
                                 type="button"
                                 role="menuitem"
                                 onClick={handleMoveDown}
-                                disabled={row.sourceLineIndex >= rows.length - 1}
+                                disabled={rowIndex >= rows.length - 1}
                             >
                                 Move down
                             </button>
