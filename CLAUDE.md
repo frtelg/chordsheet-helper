@@ -2,12 +2,13 @@
 
 @.wolf/OPENWOLF.md
 
-This project uses OpenWolf for context management. Read and follow .wolf/OPENWOLF.md every session. Check .wolf/cerebrum.md before generating code. Check .wolf/anatomy.md before reading files.
-
+This project uses OpenWolf for context management. Read and follow .wolf/OPENWOLF.md every session.
+Check .wolf/cerebrum.md before generating code. Check .wolf/anatomy.md before reading files.
 
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this
+repository.
 
 ## Commands
 
@@ -20,18 +21,22 @@ yarn lint:fix     # Auto-fix ESLint issues
 ```
 
 Run a single test file:
+
 ```bash
 yarn test src/lib/chord/parseChord.spec.ts
 ```
 
 ## Node version
 
-**Always use Node 24** (see `.nvmrc`). If running commands in a shell that defaults to a different Node version, use nvm to switch:
+**Always use Node 24** (see `.nvmrc`). If running commands in a shell that defaults to a different
+Node version, use nvm to switch:
+
 ```bash
 . ~/.nvm/nvm.sh && nvm use 24
 ```
 
-This ensures pre-commit hooks (gitleaks, lint-staged), `yarn` commands, and `openspec` CLI all run under the correct Node version. Mismatched versions cause hook failures and linting errors.
+This ensures pre-commit hooks (gitleaks, lint-staged), `yarn` commands, and `openspec` CLI all run
+under the correct Node version. Mismatched versions cause hook failures and linting errors.
 
 ## Quality gate — run before every commit
 
@@ -39,7 +44,8 @@ Before committing any change, run the full quality gate in this order:
 
 1. **Unit tests** — `yarn test --watchAll=false` — all suites must pass
 2. **Production build** — `yarn build` — must complete without errors
-3. **E2E tests** — `yarn playwright test` — all 27 tests must pass (Playwright manages the dev server automatically)
+3. **E2E tests** — `yarn playwright test` — all 27 tests must pass (Playwright manages the dev
+   server automatically)
 
 All three steps must pass. Do not commit if any step fails.
 
@@ -54,36 +60,46 @@ Follow the [Conventional Commits](https://www.conventionalcommits.org/) specific
 Common types: `feat`, `fix`, `chore`, `refactor`, `test`, `docs`, `style`, `perf`, `ci`.
 
 Examples:
+
 - `feat(transposer): add support for sharp notation`
 - `fix(parseChord): handle edge case for diminished seventh`
 - `chore: upgrade Node.js to v24`
 
 ## Git hooks — never skip
 
-**Never use `--no-verify` or any other mechanism to bypass pre-commit or pre-push hooks.** If a hook fails, fix the underlying issue before committing. This applies without exception, even when explicitly asked to commit quickly.
+**Never use `--no-verify` or any other mechanism to bypass pre-commit or pre-push hooks.** If a hook
+fails, fix the underlying issue before committing. This applies without exception, even when
+explicitly asked to commit quickly.
 
 ## Architecture
 
-This is a Next.js 13 App Router app with Redux Toolkit for state management. The app has two main views: an **editor** and a **result** view, toggled by `AppReducer.showResult`.
+This is a Next.js 13 App Router app with Redux Toolkit for state management. The app has two main
+views: an **editor** and a **result** view, toggled by `AppReducer.showResult`.
 
 ### State (src/redux/reducer/)
 
 Three Redux slices:
-- **ChordSheetReducer** — core state: chords per row, key detection, transposition, row selection, undo history
+
+- **ChordSheetReducer** — core state: chords per row, key detection, transposition, row selection,
+  undo history
 - **SongTextReducer** — the raw lyrics text
 - **AppReducer** — UI state (show editor vs. result)
 
 ### Containers (src/container/)
 
-- **SongTextInput** — paste raw lyrics; opens `ProcessChordLinesModal` to extract chord rows from pasted text containing both chords and lyrics
-- **ChordSheetEditor** — main editing UI; one row per lyric line; `HelpersBar` (copy/paste/move rows), `Transposer`, `ChordSheetRow` per line
-- **ChordSheetResult** — read-only display with detected key; exports to OnSong format via `DownloadTextAsFileLink`
+- **SongTextInput** — paste raw lyrics; opens `ProcessChordLinesModal` to extract chord rows from
+  pasted text containing both chords and lyrics
+- **ChordSheetEditor** — main editing UI; one row per lyric line; `HelpersBar` (copy/paste/move
+  rows), `Transposer`, `ChordSheetRow` per line
+- **ChordSheetResult** — read-only display with detected key; exports to OnSong format via
+  `DownloadTextAsFileLink`
 
 ### Domain Model (src/model/)
 
 - `NoteName` enum — C, D, E, F, G, A, B plus flats (no sharps internally)
 - `MusicNote` — a note with interval arithmetic
-- `Chord` interface — root `MusicNote` + array of additional `MusicNote` intervals; concrete types: Major, Minor, Diminished, Augmented, Suspended, Power
+- `Chord` interface — root `MusicNote` + array of additional `MusicNote` intervals; concrete types:
+  Major, Minor, Diminished, Augmented, Suspended, Power
 
 ### Business Logic (src/lib/)
 
