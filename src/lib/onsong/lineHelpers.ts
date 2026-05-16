@@ -47,6 +47,5 @@ export function extractLyric(line: string): string {
 export function rebuildLine(chord: string, lyric: string): string {
     if (!chord && !lyric) return '';
     if (!chord) return lyric;
-    if (!lyric) return chord;
     return formatBracketedLine(chord, lyric);
 }
