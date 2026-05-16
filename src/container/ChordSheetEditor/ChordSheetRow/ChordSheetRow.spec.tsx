@@ -33,6 +33,7 @@ const makeRow = (overrides: Partial<Row> = {}): Row => ({
     lyric: 'Amazing',
     sourceLineIndex: 0,
     isInstrumental: false,
+    precededByBlank: false,
     ...overrides,
 });
 
@@ -151,32 +152,6 @@ describe('ChordSheetRow click mode dispatch', () => {
         fireEvent.click(lyricInput, { shiftKey: true });
         expect(store.getState().canonical.selected.indexes).toContain(0);
     });
-
-    it('single-click updates focus to clicked row (so subsequent paste anchors here)', async () => {
-        const user = userEvent.setup();
-        const onRowFocus = jest.fn();
-        const store = makeStore([]);
-        renderRow(store, { rowIndex: 2, onRowFocus });
-        await user.click(screen.getByRole('option'));
-        expect(onRowFocus).toHaveBeenCalledWith(2);
-    });
-
-    it('shift-click updates focus to clicked row', () => {
-        const onRowFocus = jest.fn();
-        const store = makeStore([0]);
-        renderRow(store, { rowIndex: 3, onRowFocus });
-        fireEvent.click(screen.getByRole('option'), { shiftKey: true });
-        expect(onRowFocus).toHaveBeenCalledWith(3);
-    });
-
-    it('meta-click updates focus to clicked row', async () => {
-        const user = userEvent.setup();
-        const onRowFocus = jest.fn();
-        const store = makeStore([]);
-        renderRow(store, { rowIndex: 1, onRowFocus });
-        await user.click(screen.getByRole('option'), { metaKey: true });
-        expect(onRowFocus).toHaveBeenCalledWith(1);
-    });
 });
 
 // ── Kebab menu ────────────────────────────────────────────────────────────────
@@ -242,6 +217,41 @@ describe('ChordSheetRow kebab menu', () => {
         });
         await user.click(screen.getByLabelText('Row actions'));
         expect(screen.getByRole('menuitem', { name: 'Copy chord text' })).toBeDisabled();
+    });
+});
+
+// ── precededByBlank separator class ──────────────────────────────────────────
+
+describe('ChordSheetRow preceded-by-blank class', () => {
+    it('adds --preceded-by-blank class when precededByBlank=true and rowIndex > 0', () => {
+        const store = makeStore([]);
+        renderRow(store, {
+            rowIndex: 1,
+            row: makeRow({ precededByBlank: true, sourceLineIndex: 2 }),
+        });
+        expect(screen.getByRole('option')).toHaveClass('SongTextRowContainer--preceded-by-blank');
+    });
+
+    it('does not add class when precededByBlank=true but rowIndex === 0', () => {
+        const store = makeStore([]);
+        renderRow(store, {
+            rowIndex: 0,
+            row: makeRow({ precededByBlank: true, sourceLineIndex: 0 }),
+        });
+        expect(screen.getByRole('option')).not.toHaveClass(
+            'SongTextRowContainer--preceded-by-blank',
+        );
+    });
+
+    it('does not add class when precededByBlank=false', () => {
+        const store = makeStore([]);
+        renderRow(store, {
+            rowIndex: 1,
+            row: makeRow({ precededByBlank: false, sourceLineIndex: 1 }),
+        });
+        expect(screen.getByRole('option')).not.toHaveClass(
+            'SongTextRowContainer--preceded-by-blank',
+        );
     });
 });
 

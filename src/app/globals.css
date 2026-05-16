@@ -731,6 +731,12 @@ span[role='button']:focus-visible {
   box-shadow: inset 0 -3px 0 0 var(--color-accent);
 }
 
+.SongTextRowContainer--preceded-by-blank {
+  margin-top: var(--space-4);
+  border-top: 1px dashed var(--color-border-muted);
+  padding-top: var(--space-2);
+}
+
 /* Make the row a flex container in new UX so DragHandle + content + KebabMenu align */
 .SongTextRowContainer[role='option'] {
   display: flex;

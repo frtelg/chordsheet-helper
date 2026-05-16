@@ -93,44 +93,57 @@ describe('SelectionActionBar Move buttons', () => {
         const store = makeStore();
         store.dispatch(setSelected({ index: 0, mode: 'single' }));
         renderBar(store);
-        expect(screen.getByTitle('Move up')).toBeDisabled();
+        expect(screen.getByTitle('Already at the top')).toBeDisabled();
     });
 
     it('Move ↑ enabled when selection not at top and contiguous', () => {
         const store = makeStore();
         store.dispatch(setSelected({ index: 1, mode: 'single' }));
         renderBar(store);
-        expect(screen.getByTitle('Move up')).not.toBeDisabled();
+        expect(screen.getByTitle('Move selection up')).not.toBeDisabled();
     });
 
     it('Move ↓ disabled when selection at bottom (maxIdx === rows.length - 1)', () => {
         const store = makeStore();
         store.dispatch(setSelected({ index: 3, mode: 'single' }));
         renderBar(store);
-        expect(screen.getByTitle('Move down')).toBeDisabled();
+        expect(screen.getByTitle('Already at the bottom')).toBeDisabled();
     });
 
     it('Move ↓ enabled when selection not at bottom and contiguous', () => {
         const store = makeStore();
         store.dispatch(setSelected({ index: 2, mode: 'single' }));
         renderBar(store);
-        expect(screen.getByTitle('Move down')).not.toBeDisabled();
+        expect(screen.getByTitle('Move selection down')).not.toBeDisabled();
     });
 
-    it('Move ↑ disabled for non-contiguous selection', () => {
+    it('Move ↑ disabled for non-contiguous selection (user skipped a rendered row)', () => {
         const store = makeStore();
+        // FOUR_LINE has rendered rows at sLI 0,1,2,3; skipping sLI=2 is "not contiguous"
         store.dispatch(setSelected({ index: 1, mode: 'single' }));
         store.dispatch(setSelected({ index: 3, mode: 'toggle' }));
         renderBar(store);
-        expect(screen.getByTitle('Move up')).toBeDisabled();
+        expect(screen.getByTitle('Selection is not contiguous')).toBeDisabled();
     });
 
-    it('Move ↓ disabled for non-contiguous selection', () => {
+    it('Move ↓ disabled for non-contiguous selection (user skipped a rendered row)', () => {
         const store = makeStore();
         store.dispatch(setSelected({ index: 0, mode: 'single' }));
         store.dispatch(setSelected({ index: 2, mode: 'toggle' }));
         renderBar(store);
-        expect(screen.getByTitle('Move down')).toBeDisabled();
+        expect(screen.getByTitle('Selection is not contiguous')).toBeDisabled();
+    });
+
+    it('Move ↑/↓ show boundary tooltip when gap contains only blank source lines', () => {
+        // Canonical: sLI=0 lyric row, sLI=1 chord row, sLI=2 blank, sLI=3 chord row
+        // Selecting sLI=1 and sLI=3 produces a gap at sLI=2 (blank separator, not rendered).
+        const withBlank = 'intro\n[Am]love\n\n[G]me';
+        const store = makeStore(withBlank);
+        // Select sLI=1 and sLI=3 (toggle); gap at sLI=2 is blank
+        store.dispatch(setSelected({ index: 1, mode: 'single' }));
+        store.dispatch(setSelected({ index: 3, mode: 'toggle' }));
+        renderBar(store);
+        expect(screen.getAllByTitle('Selection crosses a blank-line boundary')).toHaveLength(2);
     });
 });
 

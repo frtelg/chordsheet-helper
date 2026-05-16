@@ -39,8 +39,43 @@ const SelectionActionBar: FunctionComponent<SelectionActionBarProps> = ({
         indexes.length === maxIdx - minIdx + 1 &&
         sortedIndexes.every((idx, i) => idx === minIdx + i);
 
+    // Indexes of source lines that are actually rendered (not blank separators)
+    const renderedSourceIndexSet = new Set(rows.map((r) => r.sourceLineIndex));
+
+    // Non-contiguous because EVERY gap in the sourceLineIndex range contains only blank
+    // separator lines (not unselected rendered rows). Distinguishes "user skipped a row"
+    // (non-contiguous by cmd+click over rendered rows) from "blank line between sections".
+    const spansBoundary =
+        !isContiguous &&
+        (() => {
+            for (let i = 0; i < sortedIndexes.length - 1; i++) {
+                const a = sortedIndexes[i];
+                const b = sortedIndexes[i + 1];
+                for (let g = a + 1; g < b; g++) {
+                    if (renderedSourceIndexSet.has(g)) return false;
+                }
+            }
+            return true;
+        })();
+
     const canMoveUp = isContiguous && minIdx > 0;
     const canMoveDown = isContiguous && maxIdx < rows.length - 1;
+
+    const moveUpTitle = canMoveUp
+        ? 'Move selection up'
+        : minIdx === 0
+          ? 'Already at the top'
+          : spansBoundary
+            ? 'Selection crosses a blank-line boundary'
+            : 'Selection is not contiguous';
+
+    const moveDownTitle = canMoveDown
+        ? 'Move selection down'
+        : maxIdx === rows.length - 1
+          ? 'Already at the bottom'
+          : spansBoundary
+            ? 'Selection crosses a blank-line boundary'
+            : 'Selection is not contiguous';
 
     // Paste target: prefer focused row, fall back to hovered row
     const pasteTargetRowIndex = focusedRowIndex ?? hoveredRowIndex;
@@ -93,7 +128,7 @@ const SelectionActionBar: FunctionComponent<SelectionActionBarProps> = ({
             <button
                 type="button"
                 className="SelectionBarButton"
-                title="Move up"
+                title={moveUpTitle}
                 onClick={handleMoveUp}
                 disabled={!canMoveUp}
             >
@@ -102,7 +137,7 @@ const SelectionActionBar: FunctionComponent<SelectionActionBarProps> = ({
             <button
                 type="button"
                 className="SelectionBarButton"
-                title="Move down"
+                title={moveDownTitle}
                 onClick={handleMoveDown}
                 disabled={!canMoveDown}
             >

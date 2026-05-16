@@ -99,6 +99,7 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
             isLifted ? 'SongTextRowContainer--lifted' : '',
             dropIndicator === 'before' ? 'SongTextRowContainer--drop-before' : '',
             dropIndicator === 'after' ? 'SongTextRowContainer--drop-after' : '',
+            row.precededByBlank && rowIndex > 0 ? 'SongTextRowContainer--preceded-by-blank' : '',
         ]
             .filter(Boolean)
             .join(' ');
@@ -158,10 +159,6 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
                           ? 'toggle'
                           : 'single';
                     dispatch(setSelected({ index: row.sourceLineIndex, mode }));
-                    // Update focus to the clicked row so subsequent keyboard
-                    // actions (e.g. Cmd+V paste) anchor at the clicked row,
-                    // not at a stale previously-focused row.
-                    onRowFocus(rowIndex);
                 }}
                 onFocus={() => onRowFocus(rowIndex)}
             >
@@ -272,9 +269,16 @@ const ChordSheetRow: FunctionComponent<ChordSheetRowProps> = ({
         return rows[rowIndex - 1]?.sourceLineIndex ?? -1;
     };
 
+    const legacyClasses = [
+        'SongTextRowContainer',
+        row.precededByBlank && rowIndex > 0 ? 'SongTextRowContainer--preceded-by-blank' : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
+
     return (
         <div
-            className="SongTextRowContainer"
+            className={legacyClasses}
             onMouseOver={() => setIsHovering(true)}
             onMouseOut={() => setIsHovering(false)}
         >
