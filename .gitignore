@@ -42,9 +42,11 @@ yarn-error.log*
 
 # Claude Code
 .claude/settings.local.json
+.claude/settings.json
 .claude/mcp.json
 .claude/worktrees/
 .claude/plans/
+.claude/rules/openwolf.md
 
 # OpenCode (local tool integration, not project source)
 .opencode/

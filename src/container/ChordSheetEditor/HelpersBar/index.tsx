@@ -1,8 +1,8 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import ClickableIcon from '@/components/ClickableIcon';
-import { clearSelected, undo } from '@/redux/reducer/CanonicalReducer';
-import { mdiBorderNone, mdiUndoVariant } from '@mdi/js';
+import { undo } from '@/redux/reducer/CanonicalReducer';
+import { mdiUndoVariant } from '@mdi/js';
 
 interface HelpersBarProps {
     editLyricsToggled: boolean;
@@ -25,11 +25,6 @@ const HelpersBar: React.FC<HelpersBarProps> = ({ toggeEditLyrics, editLyricsTogg
                 path={mdiUndoVariant}
                 onClick={() => dispatch(undo())}
                 title="Undo last action"
-            />
-            <ClickableIcon
-                path={mdiBorderNone}
-                onClick={() => dispatch(clearSelected())}
-                title="Clear selected chord rows"
             />
         </div>
     );

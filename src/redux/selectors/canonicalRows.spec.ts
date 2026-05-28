@@ -3,19 +3,28 @@ import CanonicalReducer, {
     setCanonical,
     replaceLine,
     transposeAll,
-    pasteSelected,
+    pasteChords,
+    copySelected,
     setSelected,
     moveDown,
     moveUp,
 } from '@/redux/reducer/CanonicalReducer';
 import AppReducer from '@/redux/reducer/AppReducer';
+import ToastReducer from '@/redux/reducer/ToastReducer';
 import { selectRows, selectChordTokens, selectKey } from './canonicalRows';
 
 function makeStore(value = '') {
     const store = configureStore({
-        reducer: { canonical: CanonicalReducer, app: AppReducer },
+        reducer: { canonical: CanonicalReducer, app: AppReducer, toast: ToastReducer },
         preloadedState: {
-            canonical: { value, history: [], selected: {}, key: undefined },
+            canonical: {
+                value,
+                history: [],
+                lineIds: [],
+                selected: { anchor: undefined, indexes: [] },
+                clipboard: [],
+                key: undefined,
+            },
         },
     });
     return store;
@@ -111,33 +120,41 @@ describe('selectRows', () => {
         });
     });
 
-    describe('pasteSelected — other lines preserved', () => {
-        it('pasted rows replace target while preserving untouched lines', () => {
-            const store = makeStore('line0\nline1\nline2\nline3');
-            store.dispatch(setSelected(1));
-            store.dispatch(pasteSelected(3));
+    describe('pasteChords — overwrites chord values downward, no line insertion', () => {
+        it('replaces chord values at target going downward; line count unchanged', () => {
+            const store = makeStore('[Am]verse\n[G]chorus\nbridge\noutro');
+            store.dispatch(setSelected({ index: 0, mode: 'single' }));
+            store.dispatch(setSelected({ index: 1, mode: 'range' }));
+            store.dispatch(copySelected());
+            store.dispatch(pasteChords(2));
             const lines = store.getState().canonical.value.split('\n');
-            expect(lines).toContain('line1');
-            expect(lines).toContain('line0');
+            // 4 lines still — no insertion
+            expect(lines).toHaveLength(4);
+            // lyrics preserved
+            expect(lines[0]).toBe('[Am]verse');
+            expect(lines[1]).toBe('[G]chorus');
+            // chord values pasted onto rows 2 and 3
+            expect(lines[2]).toBe('[Am]bridge');
+            expect(lines[3]).toBe('[G]outro');
         });
     });
 
-    describe('moveDown / moveUp — line order preserved', () => {
-        it('moveDown strips chord from current line, applies to next', () => {
+    describe('moveDown / moveUp — chord-only swap semantics', () => {
+        it('moveDown swaps chord values; lyrics stay in place', () => {
             const store = makeStore('[Am]verse\nchorus');
             store.dispatch(moveDown(0));
             const lines = store.getState().canonical.value.split('\n');
+            // Am moves to sit above 'chorus'; 'verse' row has no chord now
             expect(lines[0]).toBe('verse');
-            expect(lines[1]).toContain('[Am]');
-            expect(lines[1]).toContain('chorus');
+            expect(lines[1]).toBe('[Am]chorus');
         });
 
-        it('moveUp removes the line above the given index', () => {
-            // 'verse\n\nchorus' → line 0: 'verse', line 1: '', line 2: 'chorus'
-            // moveUp(2) removes line at index 1 (the separator '')
-            const store = makeStore('verse\n\nchorus');
-            store.dispatch(moveUp(2));
-            expect(store.getState().canonical.value).toBe('verse\nchorus');
+        it('moveUp swaps chord values; lyrics stay in place', () => {
+            const store = makeStore('[Am]verse\n[G]chorus');
+            store.dispatch(moveUp(1));
+            const lines = store.getState().canonical.value.split('\n');
+            expect(lines[0]).toBe('[G]verse');
+            expect(lines[1]).toBe('[Am]chorus');
         });
     });
 
